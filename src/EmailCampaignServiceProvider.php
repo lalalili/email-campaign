@@ -1,0 +1,62 @@
+<?php
+
+namespace Lalalili\EmailCampaign;
+
+use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Support\Facades\Event;
+use Lalalili\EmailCampaign\Actions\ScheduleDueCampaignsAction;
+use Lalalili\EmailCampaign\Listeners\HandleSurveyInvitationDispatched;
+use Lalalili\EmailCampaign\Support\VariableProviderRegistry;
+use Lalalili\SurveyCore\Events\SurveyInvitationDispatched;
+use Spatie\LaravelPackageTools\Package;
+use Spatie\LaravelPackageTools\PackageServiceProvider;
+
+class EmailCampaignServiceProvider extends PackageServiceProvider
+{
+    public function configurePackage(Package $package): void
+    {
+        $package
+            ->name('email-campaign')
+            ->hasConfigFile('email-campaign')
+            ->hasViews('email-campaign')
+            ->hasMigrations([
+                '2026_04_24_000001_create_email_smtp_profiles_table',
+                '2026_04_24_000002_create_email_campaigns_table',
+                '2026_04_24_000003_create_email_campaign_recipients_table',
+                '2026_04_24_000004_create_email_deliveries_table',
+                '2026_04_29_000001_add_audience_list_to_email_campaigns_table',
+                '2026_04_29_000002_add_audience_list_row_to_email_campaign_recipients_table',
+                '2026_05_06_223506_add_survey_to_email_campaigns_table',
+                '2026_05_20_000001_add_tracking_token_to_email_deliveries_table',
+                '2026_05_20_000002_create_email_events_table',
+                '2026_05_20_000003_create_email_suppressions_table',
+                '2026_05_20_000004_make_email_campaign_id_nullable_on_email_deliveries',
+            ])
+            ->runsMigrations()
+            ->hasRoutes(['web']);
+    }
+
+    public function registeringPackage(): void
+    {
+        $this->app->singleton(VariableProviderRegistry::class, function ($app) {
+            return new VariableProviderRegistry($app);
+        });
+    }
+
+    public function bootingPackage(): void
+    {
+        Event::listen(SurveyInvitationDispatched::class, HandleSurveyInvitationDispatched::class);
+
+        $registry = $this->app->make(VariableProviderRegistry::class);
+
+        foreach (config('email-campaign.providers', []) as $provider) {
+            $registry->register($provider);
+        }
+
+        if (config('email-campaign.scheduler_enabled', true)) {
+            $this->callAfterResolving(Schedule::class, function (Schedule $schedule) {
+                $schedule->call(ScheduleDueCampaignsAction::class)->everyMinute();
+            });
+        }
+    }
+}
