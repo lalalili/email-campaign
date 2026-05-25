@@ -32,6 +32,6 @@ return [
     */
     'queue' => [
         'connection' => env('EMAIL_CAMPAIGN_QUEUE_CONNECTION'),
-        'name' => env('EMAIL_CAMPAIGN_QUEUE', 'default'),
+        'name'       => env('EMAIL_CAMPAIGN_QUEUE', 'default'),
     ],
 ];

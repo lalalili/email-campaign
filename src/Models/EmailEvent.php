@@ -31,8 +31,8 @@ class EmailEvent extends Model
     protected function casts(): array
     {
         return [
-            'type' => EmailEventType::class,
-            'occurred_at' => 'immutable_datetime',
+            'type'         => EmailEventType::class,
+            'occurred_at'  => 'immutable_datetime',
             'payload_json' => 'array',
         ];
     }

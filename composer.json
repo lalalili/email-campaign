@@ -20,6 +20,8 @@
         "pestphp/pest-plugin-laravel": "^3.0",
         "laravel/pint": "^1.0",
         "larastan/larastan": "^2.0|^3.0",
+        "lalalili/marketing-automation": "@dev",
+        "lalalili/survey-core": "@dev",
         "lalalili/package-testing-support": "*"
     },
     "autoload": {
@@ -53,6 +55,20 @@
             "url": "../audience-core",
             "options": {
                 "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "../marketing-automation",
+            "options": {
+                "symlink": false
+            }
+        },
+        {
+            "type": "path",
+            "url": "../survey-core",
+            "options": {
+                "symlink": false
             }
         },
         {

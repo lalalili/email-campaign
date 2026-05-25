@@ -47,8 +47,8 @@ class EmailDelivery extends Model
     protected function casts(): array
     {
         return [
-            'status' => EmailDeliveryStatus::class,
-            'sent_at' => 'immutable_datetime',
+            'status'    => EmailDeliveryStatus::class,
+            'sent_at'   => 'immutable_datetime',
             'opened_at' => 'immutable_datetime',
         ];
     }

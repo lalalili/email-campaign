@@ -7,7 +7,9 @@ use Lalalili\EmailCampaign\Models\EmailCampaign;
 
 class ScheduleDueCampaignsAction
 {
-    public function __construct(private SendCampaignAction $sendCampaign) {}
+    public function __construct(private SendCampaignAction $sendCampaign)
+    {
+    }
 
     public function execute(): void
     {

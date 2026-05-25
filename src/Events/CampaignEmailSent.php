@@ -8,7 +8,10 @@ use Lalalili\EmailCampaign\Models\EmailDelivery;
 
 class CampaignEmailSent
 {
-    use Dispatchable, SerializesModels;
+    use Dispatchable;
+    use SerializesModels;
 
-    public function __construct(public EmailDelivery $delivery) {}
+    public function __construct(public EmailDelivery $delivery)
+    {
+    }
 }

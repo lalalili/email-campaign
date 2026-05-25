@@ -11,17 +11,17 @@ it('dispatches jobs only for due scheduled campaigns', function () {
     Queue::fake();
 
     $due = EmailCampaign::factory()->create([
-        'status' => EmailCampaignStatus::Scheduled,
+        'status'       => EmailCampaignStatus::Scheduled,
         'scheduled_at' => now()->subMinute(),
     ]);
 
     $future = EmailCampaign::factory()->create([
-        'status' => EmailCampaignStatus::Scheduled,
+        'status'       => EmailCampaignStatus::Scheduled,
         'scheduled_at' => now()->addHour(),
     ]);
 
     $draft = EmailCampaign::factory()->create([
-        'status' => EmailCampaignStatus::Draft,
+        'status'       => EmailCampaignStatus::Draft,
         'scheduled_at' => now()->subMinute(),
     ]);
 

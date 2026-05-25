@@ -3,7 +3,6 @@
 namespace Lalalili\EmailCampaign\Actions;
 
 use DOMDocument;
-use DOMElement;
 use Lalalili\EmailCampaign\Models\EmailSuppression;
 
 class InjectEmailTrackingAction

@@ -12,8 +12,8 @@ class SystemVariableProvider implements VariableProvider
     {
         return [
             'campaign_name' => $campaign->name,
-            'now' => now()->toDateTimeString(),
-            'today' => now()->toDateString(),
+            'now'           => now()->toDateTimeString(),
+            'today'         => now()->toDateString(),
         ];
     }
 }

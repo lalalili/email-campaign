@@ -17,14 +17,14 @@ class EmailCampaignFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => 'Campaign '.Str::random(8),
+            'name'             => 'Campaign '.Str::random(8),
             'subject_template' => 'Hello {{ user_name }}',
-            'html_template' => '<p>Hi {{ user_name }}, welcome to {{ campaign_name }}.</p>',
-            'text_template' => null,
-            'survey_id' => null,
-            'status' => EmailCampaignStatus::Draft,
-            'scheduled_at' => null,
-            'extras_json' => null,
+            'html_template'    => '<p>Hi {{ user_name }}, welcome to {{ campaign_name }}.</p>',
+            'text_template'    => null,
+            'survey_id'        => null,
+            'status'           => EmailCampaignStatus::Draft,
+            'scheduled_at'     => null,
+            'extras_json'      => null,
         ];
     }
 }

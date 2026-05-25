@@ -14,7 +14,8 @@ class SendTransactionalEmailAction
     public function __construct(
         private MailerFactory $mailerFactory,
         private InjectEmailTrackingAction $injectTracking,
-    ) {}
+    ) {
+    }
 
     /**
      * Send a one-off transactional email from an existing Mailable with delivery tracking.
@@ -27,7 +28,7 @@ class SendTransactionalEmailAction
         bool $checkSuppression = true,
         ?EmailSmtpProfile $smtpProfile = null,
     ): void {
-        $subject = $mailable->envelope()->subject ?? '';
+        $subject = (string) $mailable->subject;
         $html = $mailable->render();
 
         $this->execute($to, $subject, $html, checkSuppression: $checkSuppression, smtpProfile: $smtpProfile);
@@ -55,23 +56,26 @@ class SendTransactionalEmailAction
                 continue;
             }
 
+            $trackingToken = EmailDelivery::generateTrackingToken();
+
             $delivery = EmailDelivery::create([
-                'email_campaign_id' => null,
+                'email_campaign_id'           => null,
                 'email_campaign_recipient_id' => null,
-                'to_email' => $email,
-                'status' => EmailDeliveryStatus::Pending,
-                'rendered_subject' => $subject,
-                'tracking_token' => EmailDelivery::generateTrackingToken(),
+                'to_email'                    => $email,
+                'status'                      => EmailDeliveryStatus::Pending,
+                'rendered_subject'            => $subject,
+                'tracking_token'              => $trackingToken,
             ]);
 
-            $trackedHtml = $this->injectTracking->execute($html, $delivery->tracking_token, $email);
+            $trackedHtml = $this->injectTracking->execute($html, $trackingToken, $email);
 
-            $mailable = new class($subject, $trackedHtml, $text) extends Mailable {
+            $mailable = new class ($subject, $trackedHtml, $text) extends Mailable {
                 public function __construct(
                     private string $subj,
                     private string $htmlBody,
                     private ?string $textBody,
-                ) {}
+                ) {
+                }
 
                 public function build(): static
                 {
@@ -89,13 +93,13 @@ class SendTransactionalEmailAction
                 $mailer->to($email)->send($mailable);
 
                 $delivery->update([
-                    'status' => EmailDeliveryStatus::Sent,
-                    'sent_at' => now(),
+                    'status'        => EmailDeliveryStatus::Sent,
+                    'sent_at'       => now(),
                     'error_message' => null,
                 ]);
             } catch (\Throwable $e) {
                 $delivery->update([
-                    'status' => EmailDeliveryStatus::Failed,
+                    'status'        => EmailDeliveryStatus::Failed,
                     'error_message' => $e->getMessage(),
                 ]);
             }

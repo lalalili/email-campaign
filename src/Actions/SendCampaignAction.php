@@ -9,7 +9,9 @@ use Lalalili\EmailCampaign\Models\EmailCampaign;
 
 class SendCampaignAction
 {
-    public function __construct(private readonly SyncAudienceListToCampaignRecipientsAction $syncAudienceList) {}
+    public function __construct(private readonly SyncAudienceListToCampaignRecipientsAction $syncAudienceList)
+    {
+    }
 
     public function execute(EmailCampaign $campaign): void
     {

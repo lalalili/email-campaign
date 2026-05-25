@@ -8,7 +8,10 @@ use Lalalili\EmailCampaign\Models\EmailDelivery;
 
 class CampaignEmailFailed
 {
-    use Dispatchable, SerializesModels;
+    use Dispatchable;
+    use SerializesModels;
 
-    public function __construct(public EmailDelivery $delivery, public \Throwable $exception) {}
+    public function __construct(public EmailDelivery $delivery, public \Throwable $exception)
+    {
+    }
 }

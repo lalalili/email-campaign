@@ -17,13 +17,13 @@ it('dispatches mail and records sent delivery', function () {
 
     $campaign = EmailCampaign::factory()->create([
         'subject_template' => 'Hello {{ user_name }}',
-        'html_template' => '<p>Hi {{ user_name }}</p>',
-        'text_template' => null,
+        'html_template'    => '<p>Hi {{ user_name }}</p>',
+        'text_template'    => null,
     ]);
     $recipient = EmailCampaignRecipient::factory()->create([
         'email_campaign_id' => $campaign->id,
-        'email' => 'test@example.com',
-        'user_name' => 'Alice',
+        'email'             => 'test@example.com',
+        'user_name'         => 'Alice',
     ]);
 
     (new SendCampaignEmailJob($campaign, $recipient))->handle(
@@ -47,9 +47,10 @@ it('records failed delivery when rendering throws', function () {
     $campaign = EmailCampaign::factory()->create(['subject_template' => 'Hi']);
     $recipient = EmailCampaignRecipient::factory()->create(['email_campaign_id' => $campaign->id]);
 
-    $badRender = new class extends RenderCampaignEmailAction
-    {
-        public function __construct() {}
+    $badRender = new class () extends RenderCampaignEmailAction {
+        public function __construct()
+        {
+        }
 
         public function execute(
             EmailCampaign $campaign,

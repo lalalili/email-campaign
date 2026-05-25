@@ -13,11 +13,11 @@ enum EmailCampaignStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::Draft => '草稿',
+            self::Draft     => '草稿',
             self::Scheduled => '已排程',
-            self::Sending => '寄送中',
-            self::Sent => '已寄出',
-            self::Failed => '失敗',
+            self::Sending   => '寄送中',
+            self::Sent      => '已寄出',
+            self::Failed    => '失敗',
         };
     }
 }

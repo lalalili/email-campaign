@@ -12,7 +12,9 @@ class VariableProviderRegistry
     /** @var array<int, class-string<VariableProvider>|VariableProvider> */
     private array $providers = [];
 
-    public function __construct(private Container $container) {}
+    public function __construct(private Container $container)
+    {
+    }
 
     /** @param  class-string<VariableProvider>|VariableProvider  $provider */
     public function register(string|VariableProvider $provider): void

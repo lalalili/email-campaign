@@ -23,7 +23,10 @@ use Lalalili\EmailCampaign\Support\MailerFactory;
 
 class SendCampaignEmailJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     public int $tries = 3;
 
@@ -43,7 +46,7 @@ class SendCampaignEmailJob implements ShouldQueue
         if (EmailSuppression::isSuppressed($this->recipient->email)) {
             EmailDelivery::firstOrCreate(
                 [
-                    'email_campaign_id' => $this->campaign->id,
+                    'email_campaign_id'           => $this->campaign->id,
                     'email_campaign_recipient_id' => $this->recipient->id,
                 ],
                 ['status' => EmailDeliveryStatus::Skipped],
@@ -56,41 +59,44 @@ class SendCampaignEmailJob implements ShouldQueue
 
         $delivery = EmailDelivery::firstOrCreate(
             [
-                'email_campaign_id' => $this->campaign->id,
+                'email_campaign_id'           => $this->campaign->id,
                 'email_campaign_recipient_id' => $this->recipient->id,
             ],
             [
-                'status' => EmailDeliveryStatus::Pending,
+                'status'         => EmailDeliveryStatus::Pending,
                 'tracking_token' => EmailDelivery::generateTrackingToken(),
             ],
         );
 
+        $trackingToken = $delivery->tracking_token;
+
         // Ensure token exists for retried jobs
-        if ($delivery->tracking_token === null) {
-            $delivery->update(['tracking_token' => EmailDelivery::generateTrackingToken()]);
+        if ($trackingToken === null) {
+            $trackingToken = EmailDelivery::generateTrackingToken();
+            $delivery->update(['tracking_token' => $trackingToken]);
         }
 
         try {
             $rendered = $renderAction->execute($this->campaign, $this->recipient);
 
             $html = $rendered->html !== null
-                ? $injectTracking->execute($rendered->html, $delivery->tracking_token, $this->recipient->email)
+                ? $injectTracking->execute($rendered->html, $trackingToken, $this->recipient->email)
                 : null;
 
             $mailer = $mailerFactory->forProfile($this->campaign->smtpProfile);
             $mailer->to($this->recipient->email)->send(new CampaignMail($rendered->withHtml($html)));
 
             $delivery->update([
-                'status' => EmailDeliveryStatus::Sent,
-                'sent_at' => now(),
+                'status'           => EmailDeliveryStatus::Sent,
+                'sent_at'          => now(),
                 'rendered_subject' => $rendered->subject,
-                'error_message' => null,
+                'error_message'    => null,
             ]);
 
             CampaignEmailSent::dispatch($delivery);
         } catch (\Throwable $e) {
             $delivery->update([
-                'status' => EmailDeliveryStatus::Failed,
+                'status'        => EmailDeliveryStatus::Failed,
                 'error_message' => $e->getMessage(),
             ]);
 
