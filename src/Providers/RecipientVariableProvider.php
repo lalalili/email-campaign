@@ -8,19 +8,34 @@ use Lalalili\EmailCampaign\Models\EmailCampaignRecipient;
 
 class RecipientVariableProvider implements VariableProvider
 {
+    /**
+     * @var array<int, string>
+     */
+    private const RESERVED_PAYLOAD_KEYS = [
+        'email',
+        'user_name',
+        'external_id',
+    ];
+
     public function variablesFor(EmailCampaign $campaign, EmailCampaignRecipient $recipient): array
     {
         $vars = [
-            'email' => $recipient->email,
-            'user_name' => $recipient->user_name ?? '',
+            'email'       => $recipient->email,
+            'user_name'   => $recipient->user_name ?? '',
             'external_id' => $recipient->external_id ?? '',
         ];
 
         // Flatten payload_json fields; they overwrite core fields only if explicitly set
         if (! empty($recipient->payload_json)) {
             foreach ($recipient->payload_json as $key => $value) {
+                $key = (string) $key;
+
+                if (in_array($key, self::RESERVED_PAYLOAD_KEYS, true)) {
+                    continue;
+                }
+
                 if (is_scalar($value) || $value === null) {
-                    $vars[(string) $key] = $value;
+                    $vars[$key] = $value;
                 }
             }
         }

@@ -8,7 +8,9 @@ use Lalalili\EmailCampaign\Support\VariableProviderRegistry;
 
 class BuildVariableMapAction
 {
-    public function __construct(private VariableProviderRegistry $registry) {}
+    public function __construct(private VariableProviderRegistry $registry)
+    {
+    }
 
     /**
      * Build the merged variable map for one recipient.
@@ -24,7 +26,9 @@ class BuildVariableMapAction
         // [{ source: "車牌號碼", keyword: "number" }]
         if (! empty($campaign->extras_json)) {
             foreach ($this->personalizationMappings($campaign->extras_json) as $source => $keyword) {
-                if (array_key_exists($source, $variables)) {
+                if (array_key_exists($source, $recipient->payload_json ?? [])) {
+                    $variables[$keyword] = $recipient->payload_json[$source];
+                } elseif (array_key_exists($source, $variables)) {
                     $variables[$keyword] = $variables[$source];
                 }
             }

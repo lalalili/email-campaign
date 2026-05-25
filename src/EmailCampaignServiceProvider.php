@@ -31,6 +31,7 @@ class EmailCampaignServiceProvider extends PackageServiceProvider
                 '2026_05_20_000002_create_email_events_table',
                 '2026_05_20_000003_create_email_suppressions_table',
                 '2026_05_20_000004_make_email_campaign_id_nullable_on_email_deliveries',
+                '2026_05_23_000001_add_marketing_activity_id_to_email_campaigns_table',
             ])
             ->runsMigrations()
             ->hasRoutes(['web']);

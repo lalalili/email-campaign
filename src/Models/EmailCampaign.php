@@ -13,6 +13,7 @@ use Lalalili\EmailCampaign\Enums\EmailCampaignStatus;
 
 /**
  * @property int $id
+ * @property int|null $marketing_activity_id
  * @property string $name
  * @property string|null $description
  * @property int|null $smtp_profile_id
@@ -44,6 +45,7 @@ class EmailCampaign extends Model
     }
 
     protected $fillable = [
+        'marketing_activity_id',
         'name',
         'description',
         'smtp_profile_id',
@@ -65,13 +67,13 @@ class EmailCampaign extends Model
     protected function casts(): array
     {
         return [
-            'status' => EmailCampaignStatus::class,
-            'scheduled_at' => 'datetime',
-            'sent_at' => 'datetime',
-            'survey_id' => 'integer',
-            'audience_snapshot_at' => 'datetime',
+            'status'                 => EmailCampaignStatus::class,
+            'scheduled_at'           => 'datetime',
+            'sent_at'                => 'datetime',
+            'survey_id'              => 'integer',
+            'audience_snapshot_at'   => 'datetime',
             'audience_skipped_count' => 'integer',
-            'extras_json' => 'array',
+            'extras_json'            => 'array',
         ];
     }
 
