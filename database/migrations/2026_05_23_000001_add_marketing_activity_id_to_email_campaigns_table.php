@@ -4,12 +4,13 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class () extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::table('email_campaigns', function (Blueprint $table): void {
             $table->unsignedBigInteger('marketing_activity_id')->nullable()->after('id')
-                ->comment('由行銷活動派送產生的 campaign 反向連結');
+                ->comment('由發送設定派送產生的 campaign 反向連結');
             $table->index('marketing_activity_id');
         });
     }
