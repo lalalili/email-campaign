@@ -42,14 +42,55 @@ class SendCampaignEmailJob implements ShouldQueue
 
     public function handle(RenderCampaignEmailAction $renderAction, MailerFactory $mailerFactory, InjectEmailTrackingAction $injectTracking): void
     {
-        // Skip suppressed addresses
-        if (EmailSuppression::isSuppressed($this->recipient->email)) {
-            EmailDelivery::firstOrCreate(
+        $recipientEmail = trim((string) $this->recipient->email);
+
+        if ((bool) config('email-campaign.demo_safe_mode', false)) {
+            EmailDelivery::updateOrCreate(
                 [
                     'email_campaign_id'           => $this->campaign->id,
                     'email_campaign_recipient_id' => $this->recipient->id,
                 ],
-                ['status' => EmailDeliveryStatus::Skipped],
+                [
+                    'status'        => EmailDeliveryStatus::Skipped,
+                    'to_email'      => $recipientEmail !== '' ? $recipientEmail : null,
+                    'error_message' => 'Email delivery disabled by demo safe mode.',
+                ],
+            );
+
+            $this->checkCampaignCompletion();
+
+            return;
+        }
+
+        if (! filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
+            EmailDelivery::updateOrCreate(
+                [
+                    'email_campaign_id'           => $this->campaign->id,
+                    'email_campaign_recipient_id' => $this->recipient->id,
+                ],
+                [
+                    'status'        => EmailDeliveryStatus::Skipped,
+                    'to_email'      => $recipientEmail !== '' ? $recipientEmail : null,
+                    'error_message' => 'Recipient email is missing or invalid.',
+                ],
+            );
+
+            $this->checkCampaignCompletion();
+
+            return;
+        }
+
+        // Skip suppressed addresses
+        if (EmailSuppression::isSuppressed($recipientEmail)) {
+            EmailDelivery::updateOrCreate(
+                [
+                    'email_campaign_id'           => $this->campaign->id,
+                    'email_campaign_recipient_id' => $this->recipient->id,
+                ],
+                [
+                    'status'   => EmailDeliveryStatus::Skipped,
+                    'to_email' => $recipientEmail,
+                ],
             );
 
             $this->checkCampaignCompletion();
@@ -65,6 +106,7 @@ class SendCampaignEmailJob implements ShouldQueue
             [
                 'status'         => EmailDeliveryStatus::Pending,
                 'tracking_token' => EmailDelivery::generateTrackingToken(),
+                'to_email'       => $recipientEmail,
             ],
         );
 
@@ -80,11 +122,11 @@ class SendCampaignEmailJob implements ShouldQueue
             $rendered = $renderAction->execute($this->campaign, $this->recipient);
 
             $html = $rendered->html !== null
-                ? $injectTracking->execute($rendered->html, $trackingToken, $this->recipient->email)
+                ? $injectTracking->execute($rendered->html, $trackingToken, $recipientEmail)
                 : null;
 
             $mailer = $mailerFactory->forProfile($this->campaign->smtpProfile);
-            $mailer->to($this->recipient->email)->send(new CampaignMail($rendered->withHtml($html)));
+            $mailer->to($recipientEmail)->send(new CampaignMail($rendered->withHtml($html)));
 
             $delivery->update([
                 'status'           => EmailDeliveryStatus::Sent,

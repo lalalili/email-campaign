@@ -70,3 +70,58 @@ it('records failed delivery when rendering throws', function () {
     expect($delivery->status)->toBe(EmailDeliveryStatus::Failed)
         ->and($delivery->error_message)->toContain('render error');
 });
+
+it('skips recipients with missing email without sending mail', function () {
+    Mail::fake();
+
+    $campaign = EmailCampaign::factory()->create(['subject_template' => 'Hi']);
+    $recipient = EmailCampaignRecipient::factory()->create([
+        'email_campaign_id' => $campaign->id,
+        'email'             => '',
+    ]);
+
+    (new SendCampaignEmailJob($campaign, $recipient))->handle(
+        app(RenderCampaignEmailAction::class),
+        app(MailerFactory::class),
+        app(InjectEmailTrackingAction::class),
+    );
+
+    Mail::assertNothingSent();
+
+    $delivery = EmailDelivery::where('email_campaign_id', $campaign->id)
+        ->where('email_campaign_recipient_id', $recipient->id)
+        ->first();
+
+    expect($delivery)->not->toBeNull()
+        ->and($delivery->status)->toBe(EmailDeliveryStatus::Skipped)
+        ->and($delivery->to_email)->toBeNull()
+        ->and($delivery->error_message)->toBe('Recipient email is missing or invalid.');
+});
+
+it('skips delivery without sending mail when demo safe mode is enabled', function () {
+    Mail::fake();
+    config(['email-campaign.demo_safe_mode' => true]);
+
+    $campaign = EmailCampaign::factory()->create(['subject_template' => 'Hi']);
+    $recipient = EmailCampaignRecipient::factory()->create([
+        'email_campaign_id' => $campaign->id,
+        'email'             => 'test@example.com',
+    ]);
+
+    (new SendCampaignEmailJob($campaign, $recipient))->handle(
+        app(RenderCampaignEmailAction::class),
+        app(MailerFactory::class),
+        app(InjectEmailTrackingAction::class),
+    );
+
+    Mail::assertNothingSent();
+
+    $delivery = EmailDelivery::where('email_campaign_id', $campaign->id)
+        ->where('email_campaign_recipient_id', $recipient->id)
+        ->first();
+
+    expect($delivery)->not->toBeNull()
+        ->and($delivery->status)->toBe(EmailDeliveryStatus::Skipped)
+        ->and($delivery->to_email)->toBe('test@example.com')
+        ->and($delivery->error_message)->toBe('Email delivery disabled by demo safe mode.');
+});

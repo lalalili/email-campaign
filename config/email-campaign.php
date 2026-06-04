@@ -26,6 +26,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Demo Safe Mode
+    |--------------------------------------------------------------------------
+    | This project currently exposes email campaign features from the demo panel.
+    | Keep production safe by recording delivery attempts without contacting a
+    | real mail transport unless this is explicitly disabled.
+    */
+    'demo_safe_mode' => env('EMAIL_CAMPAIGN_DEMO_SAFE_MODE', env('APP_ENV') === 'production'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Queue
     |--------------------------------------------------------------------------
     | Queue connection and name for SendCampaignEmailJob.
