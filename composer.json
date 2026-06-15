@@ -15,7 +15,6 @@
         "spatie/laravel-package-tools": "^1.16"
     },
     "require-dev": {
-        "lalalili/marketing-automation": "@dev",
         "lalalili/package-testing-support": "*",
         "lalalili/survey-core": "@dev",
         "larastan/larastan": "^2.0|^3.0",
@@ -26,6 +25,9 @@
     },
     "conflict": {
         "guzzlehttp/psr7": "<2.10.2"
+    },
+    "suggest": {
+        "lalalili/marketing-automation": "Required when enabling ShortSurveyUrlVariableProvider for activity short-link survey URLs."
     },
     "autoload": {
         "psr-4": {
@@ -58,13 +60,6 @@
             "url": "../audience-core",
             "options": {
                 "symlink": true
-            }
-        },
-        {
-            "type": "path",
-            "url": "../marketing-automation",
-            "options": {
-                "symlink": false
             }
         },
         {
