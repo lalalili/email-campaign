@@ -24,6 +24,9 @@
         "pestphp/pest": "^3.0|^4.0",
         "pestphp/pest-plugin-laravel": "^3.0|^4.0"
     },
+    "conflict": {
+        "guzzlehttp/psr7": "<2.10.2"
+    },
     "autoload": {
         "psr-4": {
             "Lalalili\\EmailCampaign\\": "src/",
