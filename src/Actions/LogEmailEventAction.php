@@ -15,10 +15,10 @@ class LogEmailEventAction
     public function execute(EmailDelivery $delivery, EmailEventType $type, ?string $url = null, array $payload = []): EmailEvent
     {
         $event = EmailEvent::create([
-            'delivery_id'  => $delivery->id,
-            'type'         => $type,
-            'url'          => $url,
-            'occurred_at'  => now(),
+            'delivery_id' => $delivery->id,
+            'type' => $type,
+            'url' => $url,
+            'occurred_at' => now(),
             'payload_json' => $payload ?: null,
         ]);
 
@@ -33,9 +33,9 @@ class LogEmailEventAction
                 EmailSuppression::firstOrCreate(
                     ['email' => mb_strtolower($email)],
                     [
-                        'reason'             => $type->value,
+                        'reason' => $type->value,
                         'source_delivery_id' => $delivery->id,
-                        'suppressed_at'      => now(),
+                        'suppressed_at' => now(),
                     ],
                 );
             }

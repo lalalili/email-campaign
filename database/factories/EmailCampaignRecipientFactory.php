@@ -17,10 +17,10 @@ class EmailCampaignRecipientFactory extends Factory
     {
         return [
             'email_campaign_id' => EmailCampaign::factory(),
-            'email'             => $this->faker->unique()->safeEmail(),
-            'user_name'         => $this->faker->name(),
-            'external_id'       => null,
-            'payload_json'      => null,
+            'email' => $this->faker->unique()->safeEmail(),
+            'user_name' => $this->faker->name(),
+            'external_id' => null,
+            'payload_json' => null,
         ];
     }
 }

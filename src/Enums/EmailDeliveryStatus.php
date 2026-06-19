@@ -13,8 +13,8 @@ enum EmailDeliveryStatus: string
     {
         return match ($this) {
             self::Pending => '待寄',
-            self::Sent    => '已寄',
-            self::Failed  => '失敗',
+            self::Sent => '已寄',
+            self::Failed => '失敗',
             self::Skipped => '略過',
         };
     }

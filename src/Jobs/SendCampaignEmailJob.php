@@ -47,12 +47,12 @@ class SendCampaignEmailJob implements ShouldQueue
         if ((bool) config('email-campaign.demo_safe_mode', false)) {
             EmailDelivery::updateOrCreate(
                 [
-                    'email_campaign_id'           => $this->campaign->id,
+                    'email_campaign_id' => $this->campaign->id,
                     'email_campaign_recipient_id' => $this->recipient->id,
                 ],
                 [
-                    'status'        => EmailDeliveryStatus::Skipped,
-                    'to_email'      => $recipientEmail !== '' ? $recipientEmail : null,
+                    'status' => EmailDeliveryStatus::Skipped,
+                    'to_email' => $recipientEmail !== '' ? $recipientEmail : null,
                     'error_message' => 'Email delivery disabled by demo safe mode.',
                 ],
             );
@@ -65,12 +65,12 @@ class SendCampaignEmailJob implements ShouldQueue
         if (! filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
             EmailDelivery::updateOrCreate(
                 [
-                    'email_campaign_id'           => $this->campaign->id,
+                    'email_campaign_id' => $this->campaign->id,
                     'email_campaign_recipient_id' => $this->recipient->id,
                 ],
                 [
-                    'status'        => EmailDeliveryStatus::Skipped,
-                    'to_email'      => $recipientEmail !== '' ? $recipientEmail : null,
+                    'status' => EmailDeliveryStatus::Skipped,
+                    'to_email' => $recipientEmail !== '' ? $recipientEmail : null,
                     'error_message' => 'Recipient email is missing or invalid.',
                 ],
             );
@@ -84,11 +84,11 @@ class SendCampaignEmailJob implements ShouldQueue
         if (EmailSuppression::isSuppressed($recipientEmail)) {
             EmailDelivery::updateOrCreate(
                 [
-                    'email_campaign_id'           => $this->campaign->id,
+                    'email_campaign_id' => $this->campaign->id,
                     'email_campaign_recipient_id' => $this->recipient->id,
                 ],
                 [
-                    'status'   => EmailDeliveryStatus::Skipped,
+                    'status' => EmailDeliveryStatus::Skipped,
                     'to_email' => $recipientEmail,
                 ],
             );
@@ -100,13 +100,13 @@ class SendCampaignEmailJob implements ShouldQueue
 
         $delivery = EmailDelivery::firstOrCreate(
             [
-                'email_campaign_id'           => $this->campaign->id,
+                'email_campaign_id' => $this->campaign->id,
                 'email_campaign_recipient_id' => $this->recipient->id,
             ],
             [
-                'status'         => EmailDeliveryStatus::Pending,
+                'status' => EmailDeliveryStatus::Pending,
                 'tracking_token' => EmailDelivery::generateTrackingToken(),
-                'to_email'       => $recipientEmail,
+                'to_email' => $recipientEmail,
             ],
         );
 
@@ -129,16 +129,16 @@ class SendCampaignEmailJob implements ShouldQueue
             $mailer->to($recipientEmail)->send(new CampaignMail($rendered->withHtml($html)));
 
             $delivery->update([
-                'status'           => EmailDeliveryStatus::Sent,
-                'sent_at'          => now(),
+                'status' => EmailDeliveryStatus::Sent,
+                'sent_at' => now(),
                 'rendered_subject' => $rendered->subject,
-                'error_message'    => null,
+                'error_message' => null,
             ]);
 
             CampaignEmailSent::dispatch($delivery);
         } catch (\Throwable $e) {
             $delivery->update([
-                'status'        => EmailDeliveryStatus::Failed,
+                'status' => EmailDeliveryStatus::Failed,
                 'error_message' => $e->getMessage(),
             ]);
 

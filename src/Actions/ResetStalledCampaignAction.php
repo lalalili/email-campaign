@@ -18,7 +18,7 @@ class ResetStalledCampaignAction
         }
 
         return $campaign->update([
-            'status'  => EmailCampaignStatus::Draft,
+            'status' => EmailCampaignStatus::Draft,
             'sent_at' => null,
         ]);
     }

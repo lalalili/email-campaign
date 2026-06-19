@@ -12,8 +12,7 @@ readonly class RenderedEmail
         public ?string $html,
         public ?string $text,
         public array $missingVariables = [],
-    ) {
-    }
+    ) {}
 
     public function withHtml(?string $html): self
     {

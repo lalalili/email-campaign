@@ -11,7 +11,5 @@ class CampaignEmailFailed
     use Dispatchable;
     use SerializesModels;
 
-    public function __construct(public EmailDelivery $delivery, public \Throwable $exception)
-    {
-    }
+    public function __construct(public EmailDelivery $delivery, public \Throwable $exception) {}
 }

@@ -54,7 +54,7 @@ class InjectEmailTrackingAction
         $pixel = "<img src=\"{$pixelUrl}\" width=\"1\" height=\"1\" alt=\"\" style=\"display:block;width:1px;height:1px;\" />";
         $footer = "\n<div style=\"text-align:center;font-size:12px;color:#999;padding:16px 0;\">"
             ."<a href=\"{$unsubscribeUrl}\" style=\"color:#999;\">取消訂閱</a>"
-            ."</div>";
+            .'</div>';
 
         if (str_contains($html, '</body>')) {
             return str_replace('</body>', $pixel.$footer.'</body>', $html);

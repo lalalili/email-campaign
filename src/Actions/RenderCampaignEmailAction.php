@@ -11,8 +11,7 @@ class RenderCampaignEmailAction
     public function __construct(
         private BuildVariableMapAction $buildMap,
         private RenderEmailTemplateAction $render,
-    ) {
-    }
+    ) {}
 
     public function execute(EmailCampaign $campaign, EmailCampaignRecipient $recipient): RenderedEmail
     {

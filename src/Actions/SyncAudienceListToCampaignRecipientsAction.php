@@ -48,19 +48,19 @@ class SyncAudienceListToCampaignRecipientsAction
                 $seenEmails[$normalizedEmail] = true;
 
                 EmailCampaignRecipient::create([
-                    'email_campaign_id'    => $campaign->id,
+                    'email_campaign_id' => $campaign->id,
                     'audience_list_row_id' => $row->id,
-                    'email'                => $email,
-                    'user_name'            => null,
-                    'external_id'          => (string) $row->id,
-                    'payload_json'         => $payload,
+                    'email' => $email,
+                    'user_name' => null,
+                    'external_id' => (string) $row->id,
+                    'payload_json' => $payload,
                 ]);
 
                 $synced++;
             }
 
             $campaign->update([
-                'audience_snapshot_at'   => now(),
+                'audience_snapshot_at' => now(),
                 'audience_skipped_count' => $skipped,
             ]);
         });

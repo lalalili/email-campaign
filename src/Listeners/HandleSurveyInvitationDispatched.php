@@ -27,11 +27,11 @@ class HandleSurveyInvitationDispatched
         $campaign = EmailCampaign::firstOrCreate(
             ['survey_id' => $survey->id, 'name' => '__survey_invitation__'],
             [
-                'description'      => "問卷邀請信容器：{$survey->title}",
+                'description' => "問卷邀請信容器：{$survey->title}",
                 'subject_template' => '邀請您填寫問卷：{{ survey_title }}',
-                'html_template'    => $this->defaultHtmlTemplate(),
-                'text_template'    => '您好，請點擊以下連結填寫問卷：{{ survey_url }}',
-                'status'           => EmailCampaignStatus::Sending,
+                'html_template' => $this->defaultHtmlTemplate(),
+                'text_template' => '您好，請點擊以下連結填寫問卷：{{ survey_url }}',
+                'status' => EmailCampaignStatus::Sending,
             ],
         );
 
@@ -39,12 +39,12 @@ class HandleSurveyInvitationDispatched
         $campaignRecipient = EmailCampaignRecipient::updateOrCreate(
             [
                 'email_campaign_id' => $campaign->id,
-                'external_id'       => (string) $recipient->id,
+                'external_id' => (string) $recipient->id,
             ],
             [
-                'email'                => (string) $recipient->email,
+                'email' => (string) $recipient->email,
                 'audience_list_row_id' => $recipient->audience_list_row_id,
-                'payload_json'         => $recipient->payload_json ?? [],
+                'payload_json' => $recipient->payload_json ?? [],
             ],
         );
 

@@ -38,9 +38,9 @@ class EmailSmtpProfile extends Model
     protected function casts(): array
     {
         return [
-            'port'       => 'integer',
+            'port' => 'integer',
             'is_default' => 'boolean',
-            'password'   => 'encrypted',
+            'password' => 'encrypted',
         ];
     }
 

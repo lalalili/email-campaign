@@ -20,8 +20,8 @@ class RecipientVariableProvider implements VariableProvider
     public function variablesFor(EmailCampaign $campaign, EmailCampaignRecipient $recipient): array
     {
         $vars = [
-            'email'       => $recipient->email,
-            'user_name'   => $recipient->user_name ?? '',
+            'email' => $recipient->email,
+            'user_name' => $recipient->user_name ?? '',
             'external_id' => $recipient->external_id ?? '',
         ];
 

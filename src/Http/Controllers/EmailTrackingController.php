@@ -21,15 +21,15 @@ class EmailTrackingController extends Controller
 
         if ($delivery) {
             $logger->execute($delivery, EmailEventType::Open, null, [
-                'ip'         => $request->ip(),
+                'ip' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);
         }
 
         return response(self::PIXEL_GIF, 200, [
-            'Content-Type'  => 'image/gif',
+            'Content-Type' => 'image/gif',
             'Cache-Control' => 'no-store, no-cache, must-revalidate',
-            'Pragma'        => 'no-cache',
+            'Pragma' => 'no-cache',
         ]);
     }
 
@@ -40,7 +40,7 @@ class EmailTrackingController extends Controller
 
         if ($delivery) {
             $logger->execute($delivery, EmailEventType::Click, (string) $destination, [
-                'ip'         => $request->ip(),
+                'ip' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);
         }
