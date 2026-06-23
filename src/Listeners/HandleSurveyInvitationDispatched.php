@@ -20,6 +20,10 @@ class HandleSurveyInvitationDispatched
 {
     public function handle(SurveyInvitationDispatched $event): void
     {
+        if (config('survey-core.integrations.email_campaign.enabled') === false) {
+            return;
+        }
+
         $recipient = $event->recipient;
         $survey = $recipient->survey;
 

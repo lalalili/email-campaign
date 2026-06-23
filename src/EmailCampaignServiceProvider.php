@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Event;
 use Lalalili\EmailCampaign\Actions\ScheduleDueCampaignsAction;
 use Lalalili\EmailCampaign\Listeners\HandleSurveyInvitationDispatched;
 use Lalalili\EmailCampaign\Support\VariableProviderRegistry;
-use Lalalili\SurveyCore\Events\SurveyInvitationDispatched;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -46,7 +45,9 @@ class EmailCampaignServiceProvider extends PackageServiceProvider
 
     public function bootingPackage(): void
     {
-        Event::listen(SurveyInvitationDispatched::class, HandleSurveyInvitationDispatched::class);
+        if (class_exists($surveyInvitationDispatched = 'Lalalili\\SurveyCore\\Events\\SurveyInvitationDispatched')) {
+            Event::listen($surveyInvitationDispatched, HandleSurveyInvitationDispatched::class);
+        }
 
         $registry = $this->app->make(VariableProviderRegistry::class);
 
