@@ -9,6 +9,7 @@ use Illuminate\Routing\Controller;
 use Lalalili\EmailCampaign\Actions\LogEmailEventAction;
 use Lalalili\EmailCampaign\Enums\EmailEventType;
 use Lalalili\EmailCampaign\Models\EmailDelivery;
+use Lalalili\EmailCampaign\Support\TrackingUrlSigner;
 
 class EmailTrackingController extends Controller
 {
@@ -33,19 +34,28 @@ class EmailTrackingController extends Controller
         ]);
     }
 
-    public function click(Request $request, string $token, LogEmailEventAction $logger): RedirectResponse
+    public function click(Request $request, string $token, LogEmailEventAction $logger, TrackingUrlSigner $signer): RedirectResponse
     {
         $delivery = EmailDelivery::where('tracking_token', $token)->first();
-        $destination = $request->query('u', '/');
+        $destination = $request->query('u');
+        $signature = $request->query('s');
+
+        if (! is_string($destination) || ! $signer->isAllowedDestination($destination)) {
+            return redirect('/');
+        }
+
+        if (! $signer->hasValidSignature($token, $destination, is_string($signature) ? $signature : null) && ! $signer->allowsUnsignedClicks()) {
+            return redirect('/');
+        }
 
         if ($delivery) {
-            $logger->execute($delivery, EmailEventType::Click, (string) $destination, [
+            $logger->execute($delivery, EmailEventType::Click, $destination, [
                 'ip' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);
         }
 
-        return redirect()->away((string) $destination);
+        return redirect()->away($destination);
     }
 
     public function unsubscribe(string $token, LogEmailEventAction $logger): Response

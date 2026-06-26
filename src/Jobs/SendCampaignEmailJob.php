@@ -7,6 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Redis;
 use Lalalili\EmailCampaign\Actions\InjectEmailTrackingAction;
 use Lalalili\EmailCampaign\Actions\RenderCampaignEmailAction;
 use Lalalili\EmailCampaign\Enums\EmailCampaignStatus;
@@ -44,7 +45,9 @@ class SendCampaignEmailJob implements ShouldQueue
     {
         $recipientEmail = trim((string) $this->recipient->email);
 
-        if ((bool) config('email-campaign.demo_safe_mode', false)) {
+        $demoSafeMode = (bool) config('email-campaign.demo_safe_mode', false);
+
+        if ($demoSafeMode || ! (bool) config('external-communications.enabled', true)) {
             EmailDelivery::updateOrCreate(
                 [
                     'email_campaign_id' => $this->campaign->id,
@@ -53,7 +56,9 @@ class SendCampaignEmailJob implements ShouldQueue
                 [
                     'status' => EmailDeliveryStatus::Skipped,
                     'to_email' => $recipientEmail !== '' ? $recipientEmail : null,
-                    'error_message' => 'Email delivery disabled by demo safe mode.',
+                    'error_message' => $demoSafeMode
+                        ? 'Email delivery disabled by demo safe mode.'
+                        : 'Email delivery disabled by external communications setting.',
                 ],
             );
 
@@ -150,11 +155,44 @@ class SendCampaignEmailJob implements ShouldQueue
         $this->checkCampaignCompletion();
     }
 
+    /**
+     * 永久失敗（重試耗盡）的 job 也代表該收件人已結算，補做 DECR 與完成檢查，
+     * 避免活動因最後一名收件人永久失敗而卡在 sending。
+     */
+    public function failed(\Throwable $e): void
+    {
+        Redis::decr(self::remainingKey($this->campaign->id));
+
+        self::finalizeIfComplete($this->campaign->id);
+    }
+
+    public static function remainingKey(int $campaignId): string
+    {
+        return "email-campaign:{$campaignId}:remaining";
+    }
+
     private function checkCampaignCompletion(): void
     {
-        $campaign = $this->campaign->fresh();
+        // Redis 計數器僅作為「是否值得跑權威 SQL 檢查」的閘門，將每 job 雙 COUNT 收斂為結束時一次。
+        // 漂移不影響正確性：完成判定一律以 SQL settled>=total 為準（見 finalizeIfComplete）。
+        $remaining = Redis::decr(self::remainingKey($this->campaign->id));
 
-        if (! $campaign) {
+        if ($remaining > 0) {
+            return;
+        }
+
+        self::finalizeIfComplete($this->campaign->id);
+    }
+
+    /**
+     * 權威完成判定：已結算的派送數 >= 收件人總數時，標記活動完成。
+     * 供 job 與對帳排程共用；計數器只是觸發時機，此處才是正確性來源。
+     */
+    public static function finalizeIfComplete(int $campaignId): void
+    {
+        $campaign = EmailCampaign::find($campaignId);
+
+        if (! $campaign || $campaign->status === EmailCampaignStatus::Sent) {
             return;
         }
 

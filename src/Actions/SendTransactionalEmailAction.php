@@ -68,6 +68,15 @@ class SendTransactionalEmailAction
 
             $trackedHtml = $this->injectTracking->execute($html, $trackingToken, $email);
 
+            if (! (bool) config('external-communications.enabled', true)) {
+                $delivery->update([
+                    'status' => EmailDeliveryStatus::Skipped,
+                    'error_message' => 'Email delivery disabled by external communications setting.',
+                ]);
+
+                continue;
+            }
+
             $mailable = new class($subject, $trackedHtml, $text) extends Mailable
             {
                 public function __construct(

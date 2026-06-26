@@ -5,6 +5,7 @@ namespace Lalalili\EmailCampaign\Models;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -18,10 +19,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $from_address
  * @property string|null $from_name
  * @property bool $is_default
+ * @property Carbon|null $updated_at
  * @property-read Collection<int, EmailCampaign> $campaigns
  */
 class EmailSmtpProfile extends Model
 {
+    /** @var list<string> */
+    protected $hidden = ['password'];
+
     protected $fillable = [
         'name',
         'mailer',

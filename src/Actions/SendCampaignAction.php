@@ -2,6 +2,7 @@
 
 namespace Lalalili\EmailCampaign\Actions;
 
+use Illuminate\Support\Facades\Redis;
 use Lalalili\EmailCampaign\Enums\EmailCampaignStatus;
 use Lalalili\EmailCampaign\Events\CampaignDispatched;
 use Lalalili\EmailCampaign\Jobs\SendCampaignEmailJob;
@@ -16,17 +17,24 @@ class SendCampaignAction
         $this->syncAudienceList->execute($campaign);
 
         try {
-            $recipients = $campaign->recipients()->get();
+            $total = $campaign->recipients()->count();
 
-            if ($recipients->isEmpty()) {
+            if ($total === 0) {
                 $campaign->update(['status' => EmailCampaignStatus::Failed]);
 
                 return;
             }
 
-            $recipients->each(function ($recipient) use ($campaign) {
-                SendCampaignEmailJob::dispatch($campaign, $recipient);
-            });
+            // 完成檢查的「待結算」計數器：job 每結算一名收件人即 DECR，歸零才觸發權威 SQL 檢查。
+            // 計數器漂移最多造成延後（由對帳排程補判），完成判定仍以 SQL settled>=total 為準。
+            Redis::setex(SendCampaignEmailJob::remainingKey($campaign->id), 7 * 24 * 3600, $total);
+
+            // 分批入隊取代一次性 hydrate 全部收件人（10 萬筆）。
+            $campaign->recipients()
+                ->select(['id', 'email_campaign_id'])
+                ->chunkById(500, function ($recipients) use ($campaign): void {
+                    $recipients->each(fn ($recipient) => SendCampaignEmailJob::dispatch($campaign, $recipient));
+                });
 
             $campaign->update(['status' => EmailCampaignStatus::Sending]);
 

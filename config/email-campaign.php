@@ -22,7 +22,7 @@ return [
     |--------------------------------------------------------------------------
     | Set to false to disable the automatic ScheduleDueCampaignsAction cron.
     */
-    'scheduler_enabled' => env('EMAIL_CAMPAIGN_SCHEDULER_ENABLED', env('APP_ENV') === 'production'),
+    'scheduler_enabled' => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -43,5 +43,10 @@ return [
     'queue' => [
         'connection' => env('EMAIL_CAMPAIGN_QUEUE_CONNECTION'),
         'name' => env('EMAIL_CAMPAIGN_QUEUE', 'default'),
+    ],
+
+    'tracking' => [
+        'signing_key' => env('EMAIL_CAMPAIGN_TRACKING_SIGNING_KEY'),
+        'allow_unsigned_clicks' => env('EMAIL_CAMPAIGN_ALLOW_UNSIGNED_CLICKS', false),
     ],
 ];

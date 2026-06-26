@@ -6,6 +6,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Event;
 use Lalalili\EmailCampaign\Actions\ScheduleDueCampaignsAction;
 use Lalalili\EmailCampaign\Listeners\HandleSurveyInvitationDispatched;
+use Lalalili\EmailCampaign\Support\MailerFactory;
 use Lalalili\EmailCampaign\Support\VariableProviderRegistry;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -41,6 +42,8 @@ class EmailCampaignServiceProvider extends PackageServiceProvider
         $this->app->singleton(VariableProviderRegistry::class, function ($app) {
             return new VariableProviderRegistry($app);
         });
+
+        $this->app->singleton(MailerFactory::class);
     }
 
     public function bootingPackage(): void
@@ -57,7 +60,11 @@ class EmailCampaignServiceProvider extends PackageServiceProvider
 
         if (config('email-campaign.scheduler_enabled', true)) {
             $this->callAfterResolving(Schedule::class, function (Schedule $schedule) {
-                $schedule->call(ScheduleDueCampaignsAction::class)->everyMinute();
+                $schedule
+                    ->call(ScheduleDueCampaignsAction::class)
+                    ->name('email-campaign:schedule-due-campaigns')
+                    ->everyMinute()
+                    ->withoutOverlapping(10);
             });
         }
     }

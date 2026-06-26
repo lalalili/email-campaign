@@ -9,7 +9,7 @@ parameters:
 
     level: 8
 
-    tmpDir: build/phpstan
+    tmpDir: ../../storage/framework/cache/phpstan/email-campaign
     checkModelProperties: false
 
     ignoreErrors:

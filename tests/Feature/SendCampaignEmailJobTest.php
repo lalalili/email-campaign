@@ -124,3 +124,34 @@ it('skips delivery without sending mail when demo safe mode is enabled', functio
         ->and($delivery->to_email)->toBe('test@example.com')
         ->and($delivery->error_message)->toBe('Email delivery disabled by demo safe mode.');
 });
+
+it('skips delivery without sending mail when external communications are disabled', function () {
+    Mail::fake();
+    config([
+        'email-campaign.demo_safe_mode' => false,
+        'external-communications.enabled' => false,
+    ]);
+
+    $campaign = EmailCampaign::factory()->create(['subject_template' => 'Hi']);
+    $recipient = EmailCampaignRecipient::factory()->create([
+        'email_campaign_id' => $campaign->id,
+        'email' => 'test@example.com',
+    ]);
+
+    (new SendCampaignEmailJob($campaign, $recipient))->handle(
+        app(RenderCampaignEmailAction::class),
+        app(MailerFactory::class),
+        app(InjectEmailTrackingAction::class),
+    );
+
+    Mail::assertNothingSent();
+
+    $delivery = EmailDelivery::where('email_campaign_id', $campaign->id)
+        ->where('email_campaign_recipient_id', $recipient->id)
+        ->first();
+
+    expect($delivery)->not->toBeNull()
+        ->and($delivery->status)->toBe(EmailDeliveryStatus::Skipped)
+        ->and($delivery->to_email)->toBe('test@example.com')
+        ->and($delivery->error_message)->toBe('Email delivery disabled by external communications setting.');
+});

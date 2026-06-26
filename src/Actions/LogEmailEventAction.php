@@ -3,9 +3,11 @@
 namespace Lalalili\EmailCampaign\Actions;
 
 use Lalalili\EmailCampaign\Enums\EmailEventType;
+use Lalalili\EmailCampaign\Listeners\HandleSurveyInvitationDispatched;
 use Lalalili\EmailCampaign\Models\EmailDelivery;
 use Lalalili\EmailCampaign\Models\EmailEvent;
 use Lalalili\EmailCampaign\Models\EmailSuppression;
+use Lalalili\SurveyCore\Models\SurveyRecipient;
 
 class LogEmailEventAction
 {
@@ -26,6 +28,10 @@ class LogEmailEventAction
             $delivery->update(['opened_at' => now()]);
         }
 
+        if ($type === EmailEventType::Open) {
+            $this->markSurveyInvitationOpened($delivery);
+        }
+
         if (in_array($type, [EmailEventType::Unsubscribe, EmailEventType::Bounce, EmailEventType::Complaint], true)) {
             $email = $delivery->to_email ?? $delivery->recipient?->email;
 
@@ -42,5 +48,35 @@ class LogEmailEventAction
         }
 
         return $event;
+    }
+
+    /**
+     * 邀請信首次開信時回寫 SurveyRecipient.invitation_opened_at。
+     * survey-core 為軟相依（require-dev），未安裝時直接略過。
+     */
+    private function markSurveyInvitationOpened(EmailDelivery $delivery): void
+    {
+        if (! class_exists(SurveyRecipient::class)) {
+            return;
+        }
+
+        $campaign = $delivery->campaign;
+
+        if ($campaign === null
+            || $campaign->survey_id === null
+            || $campaign->name !== HandleSurveyInvitationDispatched::INVITATION_CAMPAIGN_NAME) {
+            return;
+        }
+
+        $externalId = $delivery->recipient?->external_id;
+
+        if ($externalId === null || ! ctype_digit((string) $externalId)) {
+            return;
+        }
+
+        SurveyRecipient::query()
+            ->whereKey((int) $externalId)
+            ->whereNull('invitation_opened_at')
+            ->update(['invitation_opened_at' => now()]);
     }
 }

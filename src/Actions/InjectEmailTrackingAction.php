@@ -4,9 +4,14 @@ namespace Lalalili\EmailCampaign\Actions;
 
 use DOMDocument;
 use Lalalili\EmailCampaign\Models\EmailSuppression;
+use Lalalili\EmailCampaign\Support\TrackingUrlSigner;
 
 class InjectEmailTrackingAction
 {
+    public function __construct(
+        private readonly TrackingUrlSigner $signer,
+    ) {}
+
     public function execute(string $html, string $trackingToken, string $recipientEmail): string
     {
         if (EmailSuppression::isSuppressed($recipientEmail)) {
@@ -41,7 +46,9 @@ class InjectEmailTrackingAction
                     return $matches[0];
                 }
 
-                $clickUrl = route('email-campaign.track.click', $token).'?u='.urlencode($originalUrl);
+                $clickUrl = route('email-campaign.track.click', $token)
+                    .'?u='.urlencode($originalUrl)
+                    .'&s='.$this->signer->sign($token, $originalUrl);
 
                 return "<a {$attrs}href=\"{$clickUrl}\"";
             },

@@ -18,18 +18,17 @@ use Lalalili\SurveyCore\Events\SurveyInvitationDispatched;
  */
 class HandleSurveyInvitationDispatched
 {
+    /** 每張問卷共用的邀請信 campaign 容器名稱。 */
+    public const INVITATION_CAMPAIGN_NAME = '__survey_invitation__';
+
     public function handle(SurveyInvitationDispatched $event): void
     {
-        if (config('survey-core.integrations.email_campaign.enabled') === false) {
-            return;
-        }
-
         $recipient = $event->recipient;
         $survey = $recipient->survey;
 
         // Find or create the per-survey invitation campaign container.
         $campaign = EmailCampaign::firstOrCreate(
-            ['survey_id' => $survey->id, 'name' => '__survey_invitation__'],
+            ['survey_id' => $survey->id, 'name' => self::INVITATION_CAMPAIGN_NAME],
             [
                 'description' => "問卷邀請信容器：{$survey->title}",
                 'subject_template' => '邀請您填寫問卷：{{ survey_title }}',
