@@ -18,8 +18,15 @@ class TrackingUrlSigner
         return hash_equals($this->sign($trackingToken, $url), $signature);
     }
 
+    /**
+     * 未簽章的 click 轉址等同 open redirect，生產環境一律拒絕，不受 config 開關影響。
+     */
     public function allowsUnsignedClicks(): bool
     {
+        if (app()->isProduction()) {
+            return false;
+        }
+
         return (bool) config('email-campaign.tracking.allow_unsigned_clicks', false);
     }
 

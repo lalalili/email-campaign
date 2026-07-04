@@ -71,6 +71,25 @@ it('falls back to the default mailer when no profile is given', function () {
     expect($factory->forProfile(null))->toBe(app('mail.manager')->mailer());
 });
 
+it('falls back to the is_default smtp profile when no profile is given', function () {
+    makeSmtpProfile(['name' => '非預設']);
+    $default = makeSmtpProfile([
+        'name' => '預設 Profile',
+        'is_default' => true,
+        'from_address' => 'default@example.com',
+        'from_name' => 'Default Sender',
+    ]);
+
+    $mailer = app(MailerFactory::class)->forProfile(null);
+
+    expect($mailer)->toBeInstanceOf(Mailer::class);
+
+    $mailer->raw('hello', fn ($message) => $message->to('someone@example.com'));
+
+    $sent = $mailer->getSymfonyTransport()->messages()->first()->getOriginalMessage();
+    expect($sent->getFrom()[0]->getAddress())->toBe('default@example.com');
+});
+
 it('is registered as a singleton so the mailer cache survives across resolves', function () {
     expect(app(MailerFactory::class))->toBe(app(MailerFactory::class));
 });

@@ -45,8 +45,18 @@ return [
         'name' => env('EMAIL_CAMPAIGN_QUEUE', 'default'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Tracking Routes Middleware
+    |--------------------------------------------------------------------------
+    | Applied to the public open/click/unsubscribe endpoints. Keep a throttle
+    | entry here: these routes are unauthenticated and abusable without it.
+    */
+    'route_middleware' => ['throttle:60,1'],
+
     'tracking' => [
         'signing_key' => env('EMAIL_CAMPAIGN_TRACKING_SIGNING_KEY'),
+        // 生產環境強制簽章驗證（TrackingUrlSigner 會忽略此開關），避免 click 端點淪為 open redirect。
         'allow_unsigned_clicks' => env('EMAIL_CAMPAIGN_ALLOW_UNSIGNED_CLICKS', false),
     ],
 ];

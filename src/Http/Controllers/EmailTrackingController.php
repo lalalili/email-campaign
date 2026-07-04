@@ -58,7 +58,18 @@ class EmailTrackingController extends Controller
         return redirect()->away($destination);
     }
 
-    public function unsubscribe(string $token, LogEmailEventAction $logger): Response
+    /**
+     * GET 僅顯示確認頁、不寫入抑制名單：郵件閘道（Gmail、防毒）會預抓連結，
+     * 若 GET 直接退訂會造成大量誤退訂。實際退訂由 POST confirmUnsubscribe 執行。
+     */
+    public function unsubscribe(string $token): Response
+    {
+        return response()->view('email-campaign::tracking.unsubscribe-confirm', [
+            'confirmUrl' => route('email-campaign.track.unsubscribe.confirm', $token),
+        ], 200);
+    }
+
+    public function confirmUnsubscribe(string $token, LogEmailEventAction $logger): Response
     {
         $delivery = EmailDelivery::where('tracking_token', $token)->first();
 

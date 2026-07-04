@@ -21,6 +21,10 @@ class MailerFactory
 
     public function forProfile(?EmailSmtpProfile $profile): Mailer
     {
+        // 活動未指定 profile 時，退回「預設」SMTP profile（後台 is_default 開關），
+        // 再無預設 profile 才使用系統 mailer。
+        $profile ??= EmailSmtpProfile::query()->where('is_default', true)->first();
+
         // 非 MailManager（如測試的 MailFake）無 build()，直接回預設 mailer 讓 fake 攔截寄送。
         if ($profile === null || ! $this->manager instanceof MailManager) {
             return $this->manager->mailer();

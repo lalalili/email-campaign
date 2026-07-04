@@ -31,6 +31,9 @@ class SendCampaignEmailJob implements ShouldQueue
 
     public int $tries = 3;
 
+    /** SMTP 連線卡住時的保護：單封寄送不應超過 2 分鐘。 */
+    public int $timeout = 120;
+
     public int $backoff = 60;
 
     public function __construct(
@@ -114,6 +117,14 @@ class SendCampaignEmailJob implements ShouldQueue
                 'to_email' => $recipientEmail,
             ],
         );
+
+        // 已寄出的收件人不可重寄：寄送成功後若後續步驟（事件、完成檢查）拋錯觸發重試，
+        // 或同一 (campaign, recipient) 被併發派發兩個 job，這裡擋下第二次真實寄送。
+        if ($delivery->status === EmailDeliveryStatus::Sent) {
+            $this->checkCampaignCompletion();
+
+            return;
+        }
 
         $trackingToken = $delivery->tracking_token;
 
