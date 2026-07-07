@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -22,9 +23,16 @@ return new class extends Migration
                 ->references('id')->on('email_campaigns')
                 ->cascadeOnDelete();
 
-            $table->foreign('email_campaign_recipient_id')
-                ->references('id')->on('email_campaign_recipients')
-                ->cascadeOnDelete();
+            // 同 create migration：SQL Server 不允許 multiple cascade paths。
+            if (DB::getDriverName() === 'sqlsrv') {
+                $table->foreign('email_campaign_recipient_id')
+                    ->references('id')->on('email_campaign_recipients')
+                    ->noActionOnDelete();
+            } else {
+                $table->foreign('email_campaign_recipient_id')
+                    ->references('id')->on('email_campaign_recipients')
+                    ->cascadeOnDelete();
+            }
 
             $table->index(['email_campaign_id', 'email_campaign_recipient_id'], 'email_deliveries_campaign_recipient_index');
 
@@ -48,9 +56,15 @@ return new class extends Migration
                 ->references('id')->on('email_campaigns')
                 ->cascadeOnDelete();
 
-            $table->foreign('email_campaign_recipient_id')
-                ->references('id')->on('email_campaign_recipients')
-                ->cascadeOnDelete();
+            if (DB::getDriverName() === 'sqlsrv') {
+                $table->foreign('email_campaign_recipient_id')
+                    ->references('id')->on('email_campaign_recipients')
+                    ->noActionOnDelete();
+            } else {
+                $table->foreign('email_campaign_recipient_id')
+                    ->references('id')->on('email_campaign_recipients')
+                    ->cascadeOnDelete();
+            }
 
             $table->unique(['email_campaign_id', 'email_campaign_recipient_id'], 'email_deliveries_campaign_recipient_unique');
         });

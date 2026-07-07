@@ -10,7 +10,8 @@ use Lalalili\EmailCampaign\Models\EmailCampaignRecipient;
 
 class SyncAudienceListToCampaignRecipientsAction
 {
-    private const INSERT_CHUNK_SIZE = 500;
+    // SQL Server 單一語句上限 2100 個綁定參數：250 列 × 8 欄 = 2000。
+    private const INSERT_CHUNK_SIZE = 250;
 
     public function execute(EmailCampaign $campaign): int
     {

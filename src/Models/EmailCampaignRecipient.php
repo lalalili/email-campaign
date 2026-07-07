@@ -45,6 +45,16 @@ class EmailCampaignRecipient extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        // sqlsrv 上 deliveries.email_campaign_recipient_id FK 為 NO ACTION
+        // （multiple cascade paths 限制），刪收件人前先清 deliveries；
+        // 其他 driver 有 DB cascade，重複刪除無害。
+        static::deleting(function (self $recipient): void {
+            $recipient->delivery()->delete();
+        });
+    }
+
     /**
      * @return BelongsTo<EmailCampaign, $this>
      */
