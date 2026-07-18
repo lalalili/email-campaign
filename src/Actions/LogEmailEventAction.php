@@ -24,12 +24,16 @@ class LogEmailEventAction
             'payload_json' => $payload ?: null,
         ]);
 
-        if ($type === EmailEventType::Open && $delivery->opened_at === null) {
-            $delivery->update(['opened_at' => now()]);
-        }
-
         if ($type === EmailEventType::Open) {
+            $delivery->increment('open_count');
+
+            if ($delivery->opened_at === null) {
+                $delivery->update(['opened_at' => now()]);
+            }
+
             $this->markSurveyInvitationOpened($delivery);
+        } elseif ($type === EmailEventType::Click) {
+            $delivery->increment('click_count');
         }
 
         if (in_array($type, [EmailEventType::Unsubscribe, EmailEventType::Bounce, EmailEventType::Complaint], true)) {

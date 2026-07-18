@@ -21,6 +21,8 @@ use Lalalili\EmailCampaign\Enums\EmailDeliveryStatus;
  * @property string|null $tracking_token
  * @property string|null $to_email
  * @property CarbonImmutable|null $opened_at
+ * @property int $open_count
+ * @property int $click_count
  * @property-read EmailCampaign|null $campaign
  * @property-read EmailCampaignRecipient|null $recipient
  * @property-read Collection<int, EmailEvent> $events
@@ -37,6 +39,8 @@ class EmailDelivery extends Model
         'tracking_token',
         'opened_at',
         'to_email',
+        'open_count',
+        'click_count',
     ];
 
     public static function generateTrackingToken(): string
@@ -50,6 +54,8 @@ class EmailDelivery extends Model
             'status' => EmailDeliveryStatus::class,
             'sent_at' => 'immutable_datetime',
             'opened_at' => 'immutable_datetime',
+            'open_count' => 'integer',
+            'click_count' => 'integer',
         ];
     }
 
