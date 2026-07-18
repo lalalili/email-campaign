@@ -47,6 +47,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | SMTP Send Rate Limit
+    |--------------------------------------------------------------------------
+    | 每分鐘最多寄出的封數上限，避免超過 SMTP 供應商的速率而被暫時封鎖。
+    | null＝不限制。超過上限的 SendCampaignEmailJob 會被 release 回佇列稍後重試，
+    | 由 RateLimited job middleware（具名 limiter「email-campaign-send」）處理。
+    */
+    'rate_limit' => [
+        'max_per_minute' => env('EMAIL_CAMPAIGN_RATE_LIMIT_PER_MINUTE'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Tracking Routes Middleware
     |--------------------------------------------------------------------------
     | Applied to the public open/click/unsubscribe endpoints. Keep a throttle

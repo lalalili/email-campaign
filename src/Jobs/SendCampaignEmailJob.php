@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Redis;
 use Lalalili\EmailCampaign\Actions\InjectEmailTrackingAction;
@@ -42,6 +43,22 @@ class SendCampaignEmailJob implements ShouldQueue
     ) {
         $this->onConnection($this->configuredQueueConnection());
         $this->onQueue(config('email-campaign.queue.name'));
+    }
+
+    /**
+     * 未設 rate_limit.max_per_minute 時不套用；設定後超過上限的 job 會被 release 回
+     * 佇列稍後重試（受 $tries 上限約束，過低的上限搭配高流量可能耗盡重試，應依 worker
+     * 吞吐調整上限）。
+     *
+     * @return array<int, object>
+     */
+    public function middleware(): array
+    {
+        if (! config('email-campaign.rate_limit.max_per_minute')) {
+            return [];
+        }
+
+        return [new RateLimited('email-campaign-send')];
     }
 
     public function handle(RenderCampaignEmailAction $renderAction, MailerFactory $mailerFactory, InjectEmailTrackingAction $injectTracking): void

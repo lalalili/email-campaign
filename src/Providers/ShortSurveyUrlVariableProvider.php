@@ -2,6 +2,7 @@
 
 namespace Lalalili\EmailCampaign\Providers;
 
+use Lalalili\EmailCampaign\Contracts\DescribableVariableProvider;
 use Lalalili\EmailCampaign\Contracts\VariableProvider;
 use Lalalili\EmailCampaign\Models\EmailCampaign;
 use Lalalili\EmailCampaign\Models\EmailCampaignRecipient;
@@ -15,9 +16,16 @@ use Lalalili\MarketingAutomation\Models\ActivityDispatch;
  * Requires the recipient to have been created by EmailChannelDispatcher
  * (which stores email_campaign_recipient_id in ActivityDispatch.external_response_json).
  */
-class ShortSurveyUrlVariableProvider implements VariableProvider
+class ShortSurveyUrlVariableProvider implements DescribableVariableProvider, VariableProvider
 {
     public function __construct(private IssueDispatchShortLinkAction $issueShortLink) {}
+
+    public function availableVariables(): array
+    {
+        return [
+            ['key' => 'short_survey_url', 'label' => '問卷短連結'],
+        ];
+    }
 
     /**
      * @return array<string, scalar|null>

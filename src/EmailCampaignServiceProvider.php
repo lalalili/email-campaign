@@ -2,8 +2,10 @@
 
 namespace Lalalili\EmailCampaign;
 
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\RateLimiter;
 use Lalalili\EmailCampaign\Actions\ScheduleDueCampaignsAction;
 use Lalalili\EmailCampaign\Listeners\HandleSurveyInvitationDispatched;
 use Lalalili\EmailCampaign\Support\MailerFactory;
@@ -58,6 +60,14 @@ class EmailCampaignServiceProvider extends PackageServiceProvider
         foreach (config('email-campaign.providers', []) as $provider) {
             $registry->register($provider);
         }
+
+        RateLimiter::for('email-campaign-send', function () {
+            $maxPerMinute = config('email-campaign.rate_limit.max_per_minute');
+
+            return $maxPerMinute
+                ? Limit::perMinute((int) $maxPerMinute)
+                : Limit::none();
+        });
 
         if (config('email-campaign.scheduler_enabled', true)) {
             $this->callAfterResolving(Schedule::class, function (Schedule $schedule) {

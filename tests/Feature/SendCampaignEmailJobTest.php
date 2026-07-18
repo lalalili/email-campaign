@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Support\Facades\Mail;
 use Lalalili\EmailCampaign\Actions\InjectEmailTrackingAction;
 use Lalalili\EmailCampaign\Actions\RenderCampaignEmailAction;
@@ -154,4 +155,25 @@ it('skips delivery without sending mail when external communications are disable
         ->and($delivery->status)->toBe(EmailDeliveryStatus::Skipped)
         ->and($delivery->to_email)->toBe('test@example.com')
         ->and($delivery->error_message)->toBe('Email delivery disabled by external communications setting.');
+});
+
+it('has no rate limit middleware when unconfigured', function () {
+    config(['email-campaign.rate_limit.max_per_minute' => null]);
+
+    $campaign = EmailCampaign::factory()->create();
+    $recipient = EmailCampaignRecipient::factory()->create(['email_campaign_id' => $campaign->id]);
+
+    expect((new SendCampaignEmailJob($campaign, $recipient))->middleware())->toBe([]);
+});
+
+it('applies rate limit middleware when configured', function () {
+    config(['email-campaign.rate_limit.max_per_minute' => 30]);
+
+    $campaign = EmailCampaign::factory()->create();
+    $recipient = EmailCampaignRecipient::factory()->create(['email_campaign_id' => $campaign->id]);
+
+    $middleware = (new SendCampaignEmailJob($campaign, $recipient))->middleware();
+
+    expect($middleware)->toHaveCount(1)
+        ->and($middleware[0])->toBeInstanceOf(RateLimited::class);
 });

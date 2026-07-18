@@ -3,6 +3,7 @@
 namespace Lalalili\EmailCampaign\Support;
 
 use Illuminate\Contracts\Container\Container;
+use Lalalili\EmailCampaign\Contracts\DescribableVariableProvider;
 use Lalalili\EmailCampaign\Contracts\VariableProvider;
 use Lalalili\EmailCampaign\Models\EmailCampaign;
 use Lalalili\EmailCampaign\Models\EmailCampaignRecipient;
@@ -31,5 +32,31 @@ class VariableProviderRegistry
         }
 
         return $variables;
+    }
+
+    /**
+     * Aggregate the static variable descriptors advertised by providers that
+     * implement {@see DescribableVariableProvider}, for the builder sidebar.
+     * Later providers' duplicate keys overwrite earlier ones.
+     *
+     * @return list<array{key: string, label: string}>
+     */
+    public function describe(): array
+    {
+        $descriptors = [];
+
+        foreach ($this->providers as $provider) {
+            $instance = is_string($provider) ? $this->container->make($provider) : $provider;
+
+            if (! $instance instanceof DescribableVariableProvider) {
+                continue;
+            }
+
+            foreach ($instance->availableVariables() as $descriptor) {
+                $descriptors[$descriptor['key']] = $descriptor;
+            }
+        }
+
+        return array_values($descriptors);
     }
 }

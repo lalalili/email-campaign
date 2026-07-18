@@ -2,11 +2,12 @@
 
 namespace Lalalili\EmailCampaign\Providers;
 
+use Lalalili\EmailCampaign\Contracts\DescribableVariableProvider;
 use Lalalili\EmailCampaign\Contracts\VariableProvider;
 use Lalalili\EmailCampaign\Models\EmailCampaign;
 use Lalalili\EmailCampaign\Models\EmailCampaignRecipient;
 
-class RecipientVariableProvider implements VariableProvider
+class RecipientVariableProvider implements DescribableVariableProvider, VariableProvider
 {
     /**
      * @var array<int, string>
@@ -41,5 +42,17 @@ class RecipientVariableProvider implements VariableProvider
         }
 
         return $vars;
+    }
+
+    /**
+     * 僅列出固定的收件人核心欄位；payload_json 的動態欄位因人而異，不在此靜態描述。
+     */
+    public function availableVariables(): array
+    {
+        return [
+            ['key' => 'email', 'label' => '收件人 Email'],
+            ['key' => 'user_name', 'label' => '收件人姓名'],
+            ['key' => 'external_id', 'label' => '外部識別碼'],
+        ];
     }
 }
