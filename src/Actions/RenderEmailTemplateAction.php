@@ -20,6 +20,10 @@ class RenderEmailTemplateAction
         array &$missing = [],
         array $htmlLinkKeys = [],
     ): string {
+        // 缺值語意：解析不到的變數輸出空字串，並記入 $missing 供呼叫端提示作者。
+        // 注意 marketing-automation 的 RenderDispatchMessageAction 採相反策略
+        // （保留字面 {{var}}，改由 DetectUnresolvedTemplateVarsAction 事前警告）。
+        // 兩者刻意不同，修改任一邊前請先確認不是誤以為它們該一致。
         return preg_replace_callback(self::PATTERN, function (array $matches) use ($variables, $escape, &$missing, $htmlLinkKeys): string {
             $key = $matches[1];
 
