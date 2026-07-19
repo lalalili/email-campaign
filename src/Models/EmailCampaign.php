@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Lalalili\AudienceCore\Concerns\LogsModelActivity;
 use Lalalili\EmailCampaign\Database\Factories\EmailCampaignFactory;
 use Lalalili\EmailCampaign\Enums\EmailCampaignStatus;
 
@@ -38,6 +39,8 @@ class EmailCampaign extends Model
 {
     /** @use HasFactory<EmailCampaignFactory> */
     use HasFactory;
+
+    use LogsModelActivity;
 
     protected static function newFactory(): EmailCampaignFactory
     {

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Lalalili\AudienceCore\Concerns\LogsModelActivity;
 use Lalalili\EmailCampaign\Database\Factories\EmailCampaignRecipientFactory;
 
 /**
@@ -23,6 +24,11 @@ class EmailCampaignRecipient extends Model
 {
     /** @use HasFactory<EmailCampaignRecipientFactory> */
     use HasFactory;
+
+    use LogsModelActivity;
+
+    /** @var list<string> 匯入建立為批次資料同步，僅記錄管理者編輯與刪除 */
+    protected static array $recordEvents = ['updated', 'deleted'];
 
     protected static function newFactory(): EmailCampaignRecipientFactory
     {
