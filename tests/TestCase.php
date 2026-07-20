@@ -2,8 +2,6 @@
 
 namespace Lalalili\EmailCampaign\Tests;
 
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Lalalili\EmailCampaign\EmailCampaignServiceProvider;
 use Lalalili\PackageTestingSupport\PackageTestCase;
 
@@ -27,19 +25,6 @@ abstract class TestCase extends PackageTestCase
     {
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         $this->loadMigrationsFrom(__DIR__.'/../../audience-core/database/migrations');
-
-        // AudienceList 使用 spatie LogsActivity，測試環境補最小 activity_log 表。
-        Schema::create('activity_log', function (Blueprint $table): void {
-            $table->id();
-            $table->string('log_name')->nullable()->index();
-            $table->text('description');
-            $table->nullableMorphs('subject', 'subject');
-            $table->string('event')->nullable();
-            $table->nullableMorphs('causer', 'causer');
-            $table->json('attribute_changes')->nullable();
-            $table->json('properties')->nullable();
-            $table->timestamps();
-        });
     }
 
     private function redisHost(): string
