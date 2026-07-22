@@ -7,7 +7,9 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Lalalili\EmailCampaign\Actions\ScheduleDueCampaignsAction;
+use Lalalili\EmailCampaign\Contracts\EmailDeliveryWindow;
 use Lalalili\EmailCampaign\Listeners\HandleSurveyInvitationDispatched;
+use Lalalili\EmailCampaign\Support\AllowAllEmailDeliveryWindow;
 use Lalalili\EmailCampaign\Support\MailerFactory;
 use Lalalili\EmailCampaign\Support\VariableProviderRegistry;
 use Spatie\LaravelPackageTools\Package;
@@ -44,6 +46,8 @@ class EmailCampaignServiceProvider extends PackageServiceProvider
 
     public function registeringPackage(): void
     {
+        $this->app->bindIf(EmailDeliveryWindow::class, AllowAllEmailDeliveryWindow::class);
+
         $this->app->singleton(VariableProviderRegistry::class, function ($app) {
             return new VariableProviderRegistry($app);
         });

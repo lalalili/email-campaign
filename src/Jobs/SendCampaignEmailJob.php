@@ -11,6 +11,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Redis;
 use Lalalili\EmailCampaign\Actions\InjectEmailTrackingAction;
 use Lalalili\EmailCampaign\Actions\RenderCampaignEmailAction;
+use Lalalili\EmailCampaign\Contracts\EmailDeliveryWindow;
 use Lalalili\EmailCampaign\Enums\EmailCampaignStatus;
 use Lalalili\EmailCampaign\Enums\EmailDeliveryStatus;
 use Lalalili\EmailCampaign\Events\CampaignCompleted;
@@ -40,7 +41,9 @@ class SendCampaignEmailJob implements ShouldQueue
     public function __construct(
         private EmailCampaign $campaign,
         private EmailCampaignRecipient $recipient,
+        int $maxAttempts = 3,
     ) {
+        $this->tries = $maxAttempts;
         $this->onConnection($this->configuredQueueConnection());
         $this->onQueue(config('email-campaign.queue.name'));
     }
@@ -61,8 +64,12 @@ class SendCampaignEmailJob implements ShouldQueue
         return [new RateLimited('email-campaign-send')];
     }
 
-    public function handle(RenderCampaignEmailAction $renderAction, MailerFactory $mailerFactory, InjectEmailTrackingAction $injectTracking): void
-    {
+    public function handle(
+        RenderCampaignEmailAction $renderAction,
+        MailerFactory $mailerFactory,
+        InjectEmailTrackingAction $injectTracking,
+        EmailDeliveryWindow $deliveryWindow,
+    ): void {
         $recipientEmail = trim((string) $this->recipient->email);
 
         $demoSafeMode = (bool) config('email-campaign.demo_safe_mode', false);
@@ -139,6 +146,17 @@ class SendCampaignEmailJob implements ShouldQueue
         // 或同一 (campaign, recipient) 被併發派發兩個 job，這裡擋下第二次真實寄送。
         if ($delivery->status === EmailDeliveryStatus::Sent) {
             $this->checkCampaignCompletion();
+
+            return;
+        }
+
+        $nextAllowedAt = $deliveryWindow->nextAllowedAt($this->campaign);
+
+        if ($nextAllowedAt !== null) {
+            $remainingAttempts = max(1, $this->tries - $this->attempts() + 1);
+
+            self::dispatch($this->campaign, $this->recipient, $remainingAttempts)
+                ->delay($nextAllowedAt);
 
             return;
         }

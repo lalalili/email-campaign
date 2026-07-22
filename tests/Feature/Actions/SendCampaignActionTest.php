@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Queue;
 use Lalalili\EmailCampaign\Actions\InjectEmailTrackingAction;
 use Lalalili\EmailCampaign\Actions\RenderCampaignEmailAction;
 use Lalalili\EmailCampaign\Actions\SendCampaignAction;
+use Lalalili\EmailCampaign\Contracts\EmailDeliveryWindow;
 use Lalalili\EmailCampaign\Enums\EmailCampaignStatus;
 use Lalalili\EmailCampaign\Enums\EmailDeliveryStatus;
 use Lalalili\EmailCampaign\Jobs\SendCampaignEmailJob;
@@ -76,6 +77,7 @@ it('does not resend mail for a delivery that is already sent', function () {
         app(RenderCampaignEmailAction::class),
         app(MailerFactory::class),
         app(InjectEmailTrackingAction::class),
+        app(EmailDeliveryWindow::class),
     );
 
     Mail::assertNothingSent();

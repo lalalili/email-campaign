@@ -1,16 +1,22 @@
 <?php
 
+use Carbon\CarbonImmutable;
 use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Redis;
 use Lalalili\EmailCampaign\Actions\InjectEmailTrackingAction;
 use Lalalili\EmailCampaign\Actions\RenderCampaignEmailAction;
+use Lalalili\EmailCampaign\Contracts\EmailDeliveryWindow;
 use Lalalili\EmailCampaign\Data\RenderedEmail;
+use Lalalili\EmailCampaign\Enums\EmailCampaignStatus;
 use Lalalili\EmailCampaign\Enums\EmailDeliveryStatus;
 use Lalalili\EmailCampaign\Jobs\SendCampaignEmailJob;
 use Lalalili\EmailCampaign\Mail\CampaignMail;
 use Lalalili\EmailCampaign\Models\EmailCampaign;
 use Lalalili\EmailCampaign\Models\EmailCampaignRecipient;
 use Lalalili\EmailCampaign\Models\EmailDelivery;
+use Lalalili\EmailCampaign\Support\AllowAllEmailDeliveryWindow;
 use Lalalili\EmailCampaign\Support\MailerFactory;
 
 it('dispatches mail and records sent delivery', function () {
@@ -31,6 +37,7 @@ it('dispatches mail and records sent delivery', function () {
         app(RenderCampaignEmailAction::class),
         app(MailerFactory::class),
         app(InjectEmailTrackingAction::class),
+        app(EmailDeliveryWindow::class),
     );
 
     Mail::assertSent(CampaignMail::class, fn ($mail) => $mail->hasTo('test@example.com'));
@@ -64,6 +71,7 @@ it('records failed delivery when rendering throws', function () {
         $badRender,
         app(MailerFactory::class),
         app(InjectEmailTrackingAction::class),
+        app(EmailDeliveryWindow::class),
     ))->toThrow(RuntimeException::class);
 
     $delivery = EmailDelivery::first();
@@ -84,6 +92,7 @@ it('skips recipients with missing email without sending mail', function () {
         app(RenderCampaignEmailAction::class),
         app(MailerFactory::class),
         app(InjectEmailTrackingAction::class),
+        app(EmailDeliveryWindow::class),
     );
 
     Mail::assertNothingSent();
@@ -112,6 +121,7 @@ it('skips delivery without sending mail when demo safe mode is enabled', functio
         app(RenderCampaignEmailAction::class),
         app(MailerFactory::class),
         app(InjectEmailTrackingAction::class),
+        app(EmailDeliveryWindow::class),
     );
 
     Mail::assertNothingSent();
@@ -143,6 +153,7 @@ it('skips delivery without sending mail when external communications are disable
         app(RenderCampaignEmailAction::class),
         app(MailerFactory::class),
         app(InjectEmailTrackingAction::class),
+        app(EmailDeliveryWindow::class),
     );
 
     Mail::assertNothingSent();
@@ -176,4 +187,54 @@ it('applies rate limit middleware when configured', function () {
 
     expect($middleware)->toHaveCount(1)
         ->and($middleware[0])->toBeInstanceOf(RateLimited::class);
+});
+
+it('binds an allow-all delivery window by default', function () {
+    expect(app(EmailDeliveryWindow::class))->toBeInstanceOf(AllowAllEmailDeliveryWindow::class);
+});
+
+it('releases blocked delivery without sending or settling it', function () {
+    Mail::fake();
+    Queue::fake();
+
+    $campaign = EmailCampaign::factory()->create(['subject_template' => 'Hi']);
+    $recipient = EmailCampaignRecipient::factory()->create([
+        'email_campaign_id' => $campaign->id,
+        'email' => 'blocked@example.com',
+    ]);
+    $nextAllowedAt = CarbonImmutable::now()->addHours(2);
+    $deliveryWindow = new class($nextAllowedAt) implements EmailDeliveryWindow
+    {
+        public function __construct(private CarbonImmutable $nextAllowedAt) {}
+
+        public function nextAllowedAt(EmailCampaign $campaign): ?CarbonImmutable
+        {
+            return $this->nextAllowedAt;
+        }
+    };
+    Redis::set(SendCampaignEmailJob::remainingKey($campaign->id), 1);
+
+    $job = new SendCampaignEmailJob($campaign, $recipient);
+    $job->handle(
+        app(RenderCampaignEmailAction::class),
+        app(MailerFactory::class),
+        app(InjectEmailTrackingAction::class),
+        $deliveryWindow,
+    );
+
+    Queue::assertPushed(
+        SendCampaignEmailJob::class,
+        fn (SendCampaignEmailJob $queuedJob): bool => $queuedJob->delay === $nextAllowedAt
+            && $queuedJob->tries === 3,
+    );
+    Mail::assertNothingSent();
+
+    $delivery = EmailDelivery::where('email_campaign_id', $campaign->id)
+        ->where('email_campaign_recipient_id', $recipient->id)
+        ->first();
+
+    expect($delivery)->not->toBeNull()
+        ->and($delivery->status)->toBe(EmailDeliveryStatus::Pending)
+        ->and($campaign->fresh()->status)->not->toBe(EmailCampaignStatus::Sent)
+        ->and((int) Redis::get(SendCampaignEmailJob::remainingKey($campaign->id)))->toBe(1);
 });
