@@ -5,8 +5,10 @@ namespace Lalalili\EmailCampaign\Models;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Lalalili\AudienceCore\Concerns\LogsModelActivity;
+use Lalalili\EmailCampaign\Enums\EmailCampaignStatus;
 
 /**
  * @property int $id
@@ -26,6 +28,16 @@ use Lalalili\AudienceCore\Concerns\LogsModelActivity;
 class EmailSmtpProfile extends Model
 {
     use LogsModelActivity;
+    use SoftDeletes;
+
+    protected static function booted(): void
+    {
+        static::deleting(function (self $profile): void {
+            if (! $profile->isForceDeleting() && ! $profile->canBeDeleted()) {
+                throw new \DomainException($profile->deletionBlockReason());
+            }
+        });
+    }
 
     /** @var list<string> */
     protected $hidden = ['password'];
@@ -57,7 +69,22 @@ class EmailSmtpProfile extends Model
      */
     public function campaigns(): HasMany
     {
-        return $this->hasMany(EmailCampaign::class);
+        return $this->hasMany(EmailCampaign::class, 'smtp_profile_id');
+    }
+
+    public function canBeDeleted(): bool
+    {
+        return ! $this->campaigns()
+            ->whereIn('status', [
+                EmailCampaignStatus::Scheduled,
+                EmailCampaignStatus::Sending,
+            ])
+            ->exists();
+    }
+
+    public function deletionBlockReason(): string
+    {
+        return '仍有排程中或寄送中的 Email 活動使用此 SMTP 設定檔，請先取消排程或等待寄送結束。';
     }
 
     /** @return list<string> */

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Lalalili\AudienceCore\Concerns\LogsModelActivity;
 use Lalalili\EmailCampaign\Database\Factories\EmailCampaignFactory;
 use Lalalili\EmailCampaign\Enums\EmailCampaignStatus;
@@ -41,6 +42,16 @@ class EmailCampaign extends Model
     use HasFactory;
 
     use LogsModelActivity;
+    use SoftDeletes;
+
+    protected static function booted(): void
+    {
+        static::deleting(function (self $campaign): void {
+            if (! $campaign->isForceDeleting() && ! $campaign->canBeDeleted()) {
+                throw new \DomainException($campaign->deletionBlockReason());
+            }
+        });
+    }
 
     protected static function newFactory(): EmailCampaignFactory
     {
@@ -102,5 +113,23 @@ class EmailCampaign extends Model
     public function deliveries(): HasMany
     {
         return $this->hasMany(EmailDelivery::class);
+    }
+
+    public function canBeDeleted(): bool
+    {
+        return in_array($this->status, [
+            EmailCampaignStatus::Draft,
+            EmailCampaignStatus::Sent,
+            EmailCampaignStatus::Failed,
+        ], true);
+    }
+
+    public function deletionBlockReason(): string
+    {
+        return match ($this->status) {
+            EmailCampaignStatus::Scheduled => '請先取消排程，再刪除 Email 活動。',
+            EmailCampaignStatus::Sending => '活動正在寄送中，完成或失敗後才能刪除。',
+            default => '目前狀態無法刪除 Email 活動。',
+        };
     }
 }

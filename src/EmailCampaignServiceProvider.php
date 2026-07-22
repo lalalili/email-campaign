@@ -36,6 +36,7 @@ class EmailCampaignServiceProvider extends PackageServiceProvider
                 '2026_05_23_000001_add_marketing_activity_id_to_email_campaigns_table',
                 '2026_07_02_000001_add_campaign_status_index_to_email_deliveries_table',
                 '2026_07_18_000001_add_event_counts_to_email_deliveries_table',
+                '2026_07_23_003948_add_deleted_at_to_email_campaign_tables',
             ])
             ->runsMigrations()
             ->hasRoutes(['web']);
