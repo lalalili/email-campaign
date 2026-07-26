@@ -24,7 +24,7 @@ abstract class TestCase extends PackageTestCase
     protected function defineDatabaseMigrations(): void
     {
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-        $this->loadMigrationsFrom(__DIR__.'/../../audience-core/database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../vendor/lalalili/audience-core/database/migrations');
     }
 
     private function redisHost(): string
