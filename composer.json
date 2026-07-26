@@ -15,7 +15,7 @@
         "spatie/laravel-package-tools": "^1.16"
     },
     "require-dev": {
-        "lalalili/marketing-automation": "^0.1.1",
+        "lalalili/marketing-automation": "^0.2",
         "lalalili/package-testing-support": "*",
         "lalalili/survey-core": "^0.1.1",
         "larastan/larastan": "^2.0|^3.0",
@@ -41,6 +41,9 @@
             "providers": [
                 "Lalalili\\EmailCampaign\\EmailCampaignServiceProvider"
             ]
+        },
+        "branch-alias": {
+            "dev-main": "0.2.x-dev"
         }
     },
     "suggest": {
@@ -55,45 +58,22 @@
     },
     "repositories": [
         {
-            "type": "path",
-            "url": "../audience-core",
-            "options": {
-                "symlink": true,
-                "versions": {
-                    "lalalili/audience-core": "0.1.1"
-                }
-            }
+            "type": "vcs",
+            "url": "https://github.com/lalalili/audience-core.git"
         },
         {
-            "type": "path",
-            "url": "../marketing-automation",
-            "options": {
-                "symlink": false,
-                "versions": {
-                    "lalalili/marketing-automation": "0.1.1"
-                }
-            }
+            "type": "vcs",
+            "url": "https://github.com/lalalili/marketing-automation.git"
         },
         {
-            "type": "path",
-            "url": "../survey-core",
-            "options": {
-                "symlink": false,
-                "versions": {
-                    "lalalili/survey-core": "0.1.1"
-                }
-            }
+            "type": "vcs",
+            "url": "https://github.com/lalalili/survey-core.git"
         },
         {
-            "type": "path",
-            "url": "../package-testing-support",
-            "options": {
-                "symlink": false
-            }
+            "type": "vcs",
+            "url": "https://github.com/lalalili/package-testing-support.git"
         }
     ],
-    "minimum-stability": "dev",
-    "prefer-stable": true,
     "scripts": {
         "test": "pest",
         "analyse": "phpstan analyse --configuration=phpstan.neon.dist --no-progress",
