@@ -11,13 +11,13 @@
         "illuminate/queue": "^11.0|^12.0|^13.0",
         "illuminate/console": "^11.0|^12.0|^13.0",
         "illuminate/events": "^11.0|^12.0|^13.0",
-        "lalalili/audience-core": "^0.1.1",
+        "lalalili/audience-core": "^1.0",
         "spatie/laravel-package-tools": "^1.16"
     },
     "require-dev": {
-        "lalalili/marketing-automation": "^0.2",
-        "lalalili/package-testing-support": "*",
-        "lalalili/survey-core": "^0.1.1",
+        "lalalili/marketing-automation": "^1.0",
+        "lalalili/package-testing-support": "^1.0",
+        "lalalili/survey-core": "^1.0",
         "larastan/larastan": "^2.0|^3.0",
         "phpstan/phpstan": "~2.2.0",
         "laravel/pint": "^1.0",
@@ -43,7 +43,7 @@
             ]
         },
         "branch-alias": {
-            "dev-main": "0.2.x-dev"
+            "dev-main": "1.0.x-dev"
         }
     },
     "suggest": {
