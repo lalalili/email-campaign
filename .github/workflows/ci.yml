@@ -5,7 +5,8 @@ on: [push, pull_request]
 jobs:
   ci:
     uses: lalalili/.github/.github/workflows/php-package-ci.yml@main
-    secrets: inherit
+    secrets:
+      composer-token: ${{ secrets.COMPOSER_GITHUB_TOKEN }}
     with:
       php-versions: "['8.4']"
       run-validate: false
