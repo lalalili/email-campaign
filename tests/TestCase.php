@@ -35,6 +35,10 @@ abstract class TestCase extends PackageTestCase
             return $host;
         }
 
-        return gethostbyname('valkey') !== 'valkey' ? 'valkey' : 'redis';
+        if (is_file('/.dockerenv')) {
+            return 'valkey';
+        }
+
+        return '127.0.0.1';
     }
 }
