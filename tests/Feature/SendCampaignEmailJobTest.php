@@ -55,9 +55,10 @@ it('records failed delivery when rendering throws', function () {
     $campaign = EmailCampaign::factory()->create(['subject_template' => 'Hi']);
     $recipient = EmailCampaignRecipient::factory()->create(['email_campaign_id' => $campaign->id]);
 
-    $badRender = new class extends RenderCampaignEmailAction
-    {
-        public function __construct() {}
+    $badRender = new class () extends RenderCampaignEmailAction {
+        public function __construct()
+        {
+        }
 
         public function execute(
             EmailCampaign $campaign,
@@ -203,9 +204,10 @@ it('releases blocked delivery without sending or settling it', function () {
         'email' => 'blocked@example.com',
     ]);
     $nextAllowedAt = CarbonImmutable::now()->addHours(2);
-    $deliveryWindow = new class($nextAllowedAt) implements EmailDeliveryWindow
-    {
-        public function __construct(private CarbonImmutable $nextAllowedAt) {}
+    $deliveryWindow = new class ($nextAllowedAt) implements EmailDeliveryWindow {
+        public function __construct(private CarbonImmutable $nextAllowedAt)
+        {
+        }
 
         public function nextAllowedAt(EmailCampaign $campaign): ?CarbonImmutable
         {

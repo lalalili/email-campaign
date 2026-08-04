@@ -21,9 +21,8 @@ it('renders survey url as a blank target link in html only', function (): void {
         'email' => 'member@example.com',
     ]);
 
-    $registry = new VariableProviderRegistry(new Container);
-    $registry->register(new class implements VariableProvider
-    {
+    $registry = new VariableProviderRegistry(new Container());
+    $registry->register(new class () implements VariableProvider {
         public function variablesFor(EmailCampaign $campaign, EmailCampaignRecipient $recipient): array
         {
             return ['survey_url' => 'https://example.com/survey?t=abc&x=1'];
@@ -32,7 +31,7 @@ it('renders survey url as a blank target link in html only', function (): void {
 
     $rendered = (new RenderCampaignEmailAction(
         new BuildVariableMapAction($registry),
-        new RenderEmailTemplateAction,
+        new RenderEmailTemplateAction(),
     ))->execute($campaign, $recipient);
 
     expect($rendered->subject)->toBe('請填寫 https://example.com/survey?t=abc&x=1')

@@ -5,7 +5,7 @@ use Lalalili\EmailCampaign\Models\EmailCampaign;
 use Lalalili\EmailCampaign\Models\EmailCampaignRecipient;
 
 beforeEach(function () {
-    $this->action = new ImportCampaignRecipientsFromRowsAction;
+    $this->action = new ImportCampaignRecipientsFromRowsAction();
     $this->campaign = EmailCampaign::factory()->create();
 });
 

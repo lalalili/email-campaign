@@ -17,7 +17,9 @@ class MailerFactory
      */
     private array $mailers = [];
 
-    public function __construct(private MailFactory $manager) {}
+    public function __construct(private MailFactory $manager)
+    {
+    }
 
     public function forProfile(?EmailSmtpProfile $profile): Mailer
     {

@@ -10,7 +10,8 @@ class InjectEmailTrackingAction
 {
     public function __construct(
         private readonly TrackingUrlSigner $signer,
-    ) {}
+    ) {
+    }
 
     public function execute(string $html, string $trackingToken, string $recipientEmail): string
     {

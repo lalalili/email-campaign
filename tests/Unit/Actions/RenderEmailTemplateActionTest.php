@@ -3,7 +3,7 @@
 use Lalalili\EmailCampaign\Actions\RenderEmailTemplateAction;
 
 beforeEach(function () {
-    $this->action = new RenderEmailTemplateAction;
+    $this->action = new RenderEmailTemplateAction();
 });
 
 it('replaces a basic placeholder', function () {

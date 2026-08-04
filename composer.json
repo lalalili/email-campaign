@@ -18,7 +18,7 @@
         "lalalili/marketing-automation": "^1.0",
         "lalalili/package-testing-support": "^1.0",
         "lalalili/survey-core": "^1.0",
-        "larastan/larastan": "^2.0|^3.0",
+        "larastan/larastan": "^3.10",
         "phpstan/phpstan": "~2.2.0",
         "laravel/pint": "^1.0",
         "orchestra/testbench": "^9.0|^10.0|^11.0",

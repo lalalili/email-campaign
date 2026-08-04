@@ -8,7 +8,9 @@ use Lalalili\EmailCampaign\Support\VariableProviderRegistry;
 
 class BuildVariableMapAction
 {
-    public function __construct(private VariableProviderRegistry $registry) {}
+    public function __construct(private VariableProviderRegistry $registry)
+    {
+    }
 
     /**
      * Build the merged variable map for one recipient.

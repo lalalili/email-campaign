@@ -9,7 +9,9 @@ use Lalalili\EmailCampaign\Data\RenderedEmail;
 
 class CampaignMail extends Mailable
 {
-    public function __construct(private RenderedEmail $rendered) {}
+    public function __construct(private RenderedEmail $rendered)
+    {
+    }
 
     public function envelope(): Envelope
     {

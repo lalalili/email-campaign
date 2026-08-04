@@ -20,7 +20,8 @@ class SendTestCampaignEmailAction
     public function __construct(
         private RenderCampaignEmailAction $render,
         private MailerFactory $mailerFactory,
-    ) {}
+    ) {
+    }
 
     /**
      * @return RenderedEmail the rendered preview (carries `missingVariables`)

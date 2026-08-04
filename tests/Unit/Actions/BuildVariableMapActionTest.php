@@ -26,7 +26,7 @@ function makeCampaign(array $attrs = []): EmailCampaign
 
 function makeVariableRegistry(): VariableProviderRegistry
 {
-    $registry = new VariableProviderRegistry(new Container);
+    $registry = new VariableProviderRegistry(new Container());
 
     $registry->register(SystemVariableProvider::class);
     $registry->register(RecipientVariableProvider::class);
@@ -40,16 +40,14 @@ it('merges variables from all providers in order', function () {
 
     $registry = makeVariableRegistry();
 
-    $registry->register(new class implements VariableProvider
-    {
+    $registry->register(new class () implements VariableProvider {
         public function variablesFor(EmailCampaign $c, EmailCampaignRecipient $r): array
         {
             return ['a' => 'first', 'b' => 'from_first'];
         }
     });
 
-    $registry->register(new class implements VariableProvider
-    {
+    $registry->register(new class () implements VariableProvider {
         public function variablesFor(EmailCampaign $c, EmailCampaignRecipient $r): array
         {
             return ['b' => 'from_second', 'c' => 'third'];

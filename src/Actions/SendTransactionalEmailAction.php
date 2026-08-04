@@ -14,7 +14,8 @@ class SendTransactionalEmailAction
     public function __construct(
         private MailerFactory $mailerFactory,
         private InjectEmailTrackingAction $injectTracking,
-    ) {}
+    ) {
+    }
 
     /**
      * Send a one-off transactional email from an existing Mailable with delivery tracking.
@@ -77,13 +78,13 @@ class SendTransactionalEmailAction
                 continue;
             }
 
-            $mailable = new class($subject, $trackedHtml, $text) extends Mailable
-            {
+            $mailable = new class ($subject, $trackedHtml, $text) extends Mailable {
                 public function __construct(
                     private string $subj,
                     private string $htmlBody,
                     private ?string $textBody,
-                ) {}
+                ) {
+                }
 
                 public function build(): static
                 {

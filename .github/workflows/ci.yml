@@ -10,3 +10,4 @@ jobs:
     with:
       php-versions: "['8.4']"
       run-validate: false
+      run-format: true

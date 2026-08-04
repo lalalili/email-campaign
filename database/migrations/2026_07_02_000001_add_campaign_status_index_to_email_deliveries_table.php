@@ -5,8 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * finalizeIfComplete 每封信結算都會做 (email_campaign_id, status) 的 count，
      * 大型活動下需要複合索引支撐。

@@ -11,5 +11,7 @@ class CampaignEmailSent
     use Dispatchable;
     use SerializesModels;
 
-    public function __construct(public EmailDelivery $delivery) {}
+    public function __construct(public EmailDelivery $delivery)
+    {
+    }
 }

@@ -18,7 +18,9 @@ use Lalalili\MarketingAutomation\Models\ActivityDispatch;
  */
 class ShortSurveyUrlVariableProvider implements DescribableVariableProvider, VariableProvider
 {
-    public function __construct(private IssueDispatchShortLinkAction $issueShortLink) {}
+    public function __construct(private IssueDispatchShortLinkAction $issueShortLink)
+    {
+    }
 
     public function availableVariables(): array
     {

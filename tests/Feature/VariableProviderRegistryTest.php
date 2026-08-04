@@ -21,8 +21,7 @@ it('describes available variables from describable providers', function () {
 
 it('ignores providers that do not implement DescribableVariableProvider', function () {
     $registry = new VariableProviderRegistry(app());
-    $registry->register(new class implements VariableProvider
-    {
+    $registry->register(new class () implements VariableProvider {
         public function variablesFor(EmailCampaign $campaign, EmailCampaignRecipient $recipient): array
         {
             return ['undocumented' => 'x'];

@@ -5,8 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * 反正規化每封派送的開信／點擊次數，避免統計時對 email_events 做 JOIN + distinct。
      * 由 LogEmailEventAction 於記錄事件時累加；此處回填既有資料。

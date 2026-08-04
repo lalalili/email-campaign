@@ -11,5 +11,7 @@ class CampaignCompleted
     use Dispatchable;
     use SerializesModels;
 
-    public function __construct(public EmailCampaign $campaign) {}
+    public function __construct(public EmailCampaign $campaign)
+    {
+    }
 }
